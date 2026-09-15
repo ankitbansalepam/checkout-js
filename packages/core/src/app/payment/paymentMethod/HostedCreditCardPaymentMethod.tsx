@@ -1,0 +1,98 @@
+import { createCBAMPGSPaymentStrategy } from '@bigcommerce/checkout-sdk/integrations/cba-mpgs';
+import { createCreditCardPaymentStrategy } from '@bigcommerce/checkout-sdk/integrations/credit-card';
+import {
+    createCyberSourcePaymentStrategy,
+    createCyberSourceV2PaymentStrategy,
+} from '@bigcommerce/checkout-sdk/integrations/cybersource';
+import { createSagePayPaymentStrategy } from '@bigcommerce/checkout-sdk/integrations/sagepay';
+import React, { type FunctionComponent, useCallback } from 'react';
+
+import { useCheckout } from '@bigcommerce/checkout/contexts';
+import { isExperimentEnabled } from '@bigcommerce/checkout/utility';
+
+import {
+    withHostedCreditCardFieldset,
+    type WithInjectedHostedCreditCardFieldsetProps,
+} from '../hostedCreditCard';
+
+import CreditCardPaymentMethod, {
+    type CreditCardPaymentMethodProps,
+} from './CreditCardPaymentMethod';
+
+export type HostedCreditCardPaymentMethodProps = Omit<
+    CreditCardPaymentMethodProps,
+    | 'cardFieldset'
+    | 'cardValidationSchema'
+    | 'storedCardValidationSchema'
+    | 'getStoredCardValidationFieldset'
+>;
+
+const HostedCreditCardPaymentMethod: FunctionComponent<
+    HostedCreditCardPaymentMethodProps & WithInjectedHostedCreditCardFieldsetProps
+> = ({
+    getHostedFormOptions,
+    getHostedStoredCardValidationFieldset,
+    hostedFieldset,
+    hostedStoredCardValidationSchema,
+    hostedValidationSchema,
+    initializePayment,
+    ...rest
+}) => {
+    const { selectedState: config } = useCheckout(({ data }) => data.getConfig());
+    const isCBAMPGSResolverEnabled = isExperimentEnabled(
+        config?.checkoutSettings,
+        'PI-4748.cba_resolver_configuration',
+        false,
+    );
+    const isSagePayResolverEnabled = isExperimentEnabled(
+        config?.checkoutSettings,
+        'PI-4754.sage_pay_resolver_configuration',
+        false,
+    );
+    const isCyberSourceResolverEnabled = isExperimentEnabled(
+        config?.checkoutSettings,
+        'PI-4749.cyber_source_resolver_configuration',
+        false,
+    );
+
+    const initializeHostedCreditCardPayment: CreditCardPaymentMethodProps['initializePayment'] =
+        useCallback(
+            async (options, selectedInstrument) => {
+                return initializePayment({
+                    ...options,
+                    integrations: [
+                        ...(options.integrations ?? []),
+                        createCreditCardPaymentStrategy,
+                        ...(!isCyberSourceResolverEnabled
+                            ? [createCyberSourcePaymentStrategy, createCyberSourceV2PaymentStrategy]
+                            : []),
+                        ...(!isSagePayResolverEnabled ? [createSagePayPaymentStrategy] : []),
+                        ...(!isCBAMPGSResolverEnabled ? [createCBAMPGSPaymentStrategy] : []),
+                    ],
+                    creditCard: getHostedFormOptions && {
+                        form: await getHostedFormOptions(selectedInstrument),
+                    },
+                });
+            },
+            [
+                getHostedFormOptions,
+                initializePayment,
+                isCBAMPGSResolverEnabled,
+                isSagePayResolverEnabled,
+                isCyberSourceResolverEnabled,
+            ],
+        );
+
+    return (
+        <CreditCardPaymentMethod
+            {...rest}
+            cardFieldset={hostedFieldset}
+            cardValidationSchema={hostedValidationSchema}
+            getStoredCardValidationFieldset={getHostedStoredCardValidationFieldset}
+            initializePayment={initializeHostedCreditCardPayment}
+            storedCardValidationSchema={hostedStoredCardValidationSchema}
+        />
+    );
+};
+
+export default withHostedCreditCardFieldset(HostedCreditCardPaymentMethod);

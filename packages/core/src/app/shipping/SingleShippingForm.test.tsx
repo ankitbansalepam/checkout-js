@@ -1,0 +1,522 @@
+import { type Address, createCheckoutService, type FormField } from '@bigcommerce/checkout-sdk';
+import userEvent from '@testing-library/user-event';
+import React from 'react';
+
+import { ExtensionService } from '@bigcommerce/checkout/checkout-extension';
+import {
+    CheckoutProvider,
+    ExtensionProvider,
+    LocaleContext,
+    ThemeContext,
+} from '@bigcommerce/checkout/contexts';
+import { createLocaleContext } from '@bigcommerce/checkout/locale';
+import { render, screen } from '@bigcommerce/checkout/test-utils';
+
+import { getAddressFormFields } from '../address/formField.mock';
+import { createErrorLogger } from '../common/error';
+import { getStoreConfig } from '../config/config.mock';
+
+import { useShipping } from './hooks/useShipping';
+import { getUseShippingTestMock } from './hooks/useShipping.mock';
+import { getShippingAddress } from './shipping-addresses.mock';
+import SingleShippingForm, { type SingleShippingFormProps } from './SingleShippingForm';
+
+jest.mock('./hooks/useShipping');
+
+describe('SingleShippingForm', () => {
+    const checkoutService = createCheckoutService();
+    const extensionService = new ExtensionService(checkoutService, createErrorLogger());
+    const addressFormFields = getAddressFormFields().filter(({ custom }) => !custom);
+
+    const extraFormField: FormField = {
+        custom: false,
+        default: '',
+        fieldType: 'dropdown',
+        id: 'b2bExtraField_11',
+        label: 'Dropdown extra field',
+        name: 'b2bExtraField_11',
+        options: {
+            items: [
+                { label: 'a', value: 'a' },
+                { label: 'b', value: 'b' },
+            ],
+        },
+        required: true,
+        type: 'array',
+    };
+
+    const shippingAddressWithExtraFields: Address = {
+        ...getShippingAddress(),
+        extraFields: [{ fieldId: '11', fieldValue: 'a' }],
+    };
+
+    const mockUseShipping = useShipping as jest.MockedFunction<typeof useShipping>;
+
+    const defaultUseShippingValues = getUseShippingTestMock();
+
+    beforeEach(() => {
+        mockUseShipping.mockReturnValue(defaultUseShippingValues);
+    });
+
+    const defaultProps: SingleShippingFormProps = {
+        shippingAddress: getShippingAddress(),
+        customerMessage: '',
+        cartHasChanged: false,
+        hasAddressLabel: false,
+        isBillingSameAsShipping: false,
+        isInitialValueLoaded: true,
+        shippingFormRenderTimestamp: undefined,
+        onSubmit: jest.fn(),
+        getFields: jest.fn(() => addressFormFields),
+        onUnhandledError: jest.fn(),
+    };
+
+    const shippingAutosaveDelay = 500;
+    const waitingDelay = shippingAutosaveDelay + 200;
+
+    const createSingleShippingFormComponent = (props?: Partial<SingleShippingFormProps>) => {
+        const localeContext = createLocaleContext(getStoreConfig());
+
+        return (
+            <CheckoutProvider checkoutService={checkoutService}>
+                <LocaleContext.Provider value={localeContext}>
+                    <ExtensionProvider extensionService={extensionService}>
+                        <SingleShippingForm
+                            {...defaultProps}
+                            {...props}
+                            shippingAutosaveDelay={shippingAutosaveDelay}
+                        />
+                    </ExtensionProvider>
+                </LocaleContext.Provider>
+            </CheckoutProvider>
+        );
+    };
+
+    const renderSingleShippingFormComponent = (props?: Partial<SingleShippingFormProps>) => {
+        return render(createSingleShippingFormComponent(props));
+    };
+
+    it('calls updateAddress with last event during a given timeframe', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent();
+
+        await userEvent.clear(screen.getByTestId('addressLine1Input-text'));
+        await userEvent.keyboard('foo 1');
+
+        await userEvent.clear(screen.getByTestId('addressLine1Input-text'));
+        await userEvent.keyboard('foo 2');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(1);
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                address1: 'foo 2',
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress if modified field does not affect shipping but makes form valid', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            getFields: () => [...addressFormFields.map((field) => ({ ...field, required: true }))],
+        });
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo 1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(1);
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                address2: 'foo 1',
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress including shipping options if modified field does not affect shipping but has never requested shipping options', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent();
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo 1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(1);
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                address2: 'foo 1',
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress including shipping options if custom form fields are updated', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            getFields: () => [
+                ...addressFormFields,
+                {
+                    custom: true,
+                    default: '',
+                    fieldType: 'text',
+                    id: 'field_25',
+                    label: 'Custom message',
+                    name: 'field_25',
+                    required: true,
+                    type: 'string',
+                },
+            ],
+        });
+
+        await userEvent.clear(screen.getByTestId('field_25Input-text'));
+        await userEvent.keyboard('foo');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(1);
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                customFields: [
+                    {
+                        fieldId: 'field_25',
+                        fieldValue: 'foo',
+                    },
+                ],
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress including shipping options if extra fields are updated and shipping options have already been requested', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            shippingAddress: shippingAddressWithExtraFields,
+            getFields: () => [...addressFormFields, extraFormField],
+        });
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo 1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        await userEvent.selectOptions(screen.getByTestId('b2bExtraField_11Input-select'), 'b');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(2);
+        expect(updateShippingAddress).toHaveBeenLastCalledWith(
+            {
+                ...getShippingAddress(),
+                address2: 'foo 1',
+                extraFields: [{ fieldId: '11', fieldValue: 'b' }],
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress without shipping options if extra fields are unchanged and shipping options have already been requested', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            shippingAddress: shippingAddressWithExtraFields,
+            getFields: () => [...addressFormFields, extraFormField],
+        });
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo2');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenLastCalledWith(
+            {
+                ...getShippingAddress(),
+                address2: 'foo2',
+                extraFields: [{ fieldId: '11', fieldValue: 'a' }],
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': false,
+                    },
+                },
+            },
+        );
+    });
+
+    it('calls updateAddress without shipping options if modified field does not affect shipping and shipping options have already been requested', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent();
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        await userEvent.clear(screen.getByTestId('addressLine2Input-text'));
+        await userEvent.keyboard('foo2');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                address2: 'foo2',
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': false,
+                    },
+                },
+            },
+        );
+    });
+
+    it('does not call updateAddress if modified field produces invalid address', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent();
+
+        await userEvent.clear(screen.getByTestId('addressLine1Input-text'));
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).not.toHaveBeenCalled();
+    });
+
+    it('does not call updateAddress if same address', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent();
+
+        const shippingCountry = defaultProps.shippingAddress?.country || '';
+        const countryLastChar = shippingCountry.charAt(shippingCountry.length - 1);
+
+        await userEvent.click(screen.getByTestId('countryInput-text'));
+        await userEvent.keyboard(`{backspace}${countryLastChar}`);
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).not.toHaveBeenCalled();
+    });
+
+    it('calls update address for amazon pay if required custom fields are filled out', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            methodId: 'amazonpay',
+            getFields: () => [
+                ...addressFormFields,
+                {
+                    custom: true,
+                    default: '',
+                    fieldType: 'text',
+                    id: 'field_25',
+                    label: 'Custom message',
+                    name: 'field_25',
+                    required: true,
+                    type: 'string',
+                },
+            ],
+        });
+
+        await userEvent.clear(screen.getByTestId('field_25-text'));
+        await userEvent.keyboard('foo');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalledTimes(1);
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            {
+                ...getShippingAddress(),
+                customFields: [
+                    {
+                        fieldId: 'field_25',
+                        fieldValue: 'foo',
+                    },
+                ],
+            },
+            {
+                params: {
+                    include: {
+                        'consignments.availableShippingOptions': true,
+                    },
+                },
+            },
+        );
+    });
+
+    it('does not update address for amazon pay if required custom fields is left empty', async () => {
+        const updateShippingAddress = jest.fn();
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({
+            methodId: 'amazonpay',
+            getFields: () => [
+                ...addressFormFields,
+                {
+                    custom: true,
+                    default: '',
+                    fieldType: 'text',
+                    id: 'field_25',
+                    label: 'Custom message',
+                    name: 'field_25',
+                    required: true,
+                    type: 'string',
+                },
+            ],
+        });
+
+        await userEvent.clear(screen.getByTestId('field_25-text'));
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).not.toHaveBeenCalled();
+    });
+
+    it('does not render billing same as shipping checkbox for amazon pay', async () => {
+        renderSingleShippingFormComponent({ methodId: 'amazonpay' });
+
+        expect(screen.queryByTestId('billingSameAsShipping')).not.toBeInTheDocument();
+    });
+
+    it('does not render billing same as shipping checkbox under enhancedThemeV1', async () => {
+        // Under enhancedThemeV1 the toggle moves to the payment step's billing block.
+        render(
+            <ThemeContext.Provider value={{ enhancedThemeV1: true }}>
+                {createSingleShippingFormComponent()}
+            </ThemeContext.Provider>,
+        );
+
+        expect(screen.queryByTestId('billingSameAsShipping')).not.toBeInTheDocument();
+    });
+
+    it('re-renders itself when shippingFormRenderTimestamp is changed', async () => {
+        const customField = {
+            custom: true,
+            default: 'BigCommerce',
+            id: 'custom',
+            label: 'Custom',
+            name: 'custom',
+            required: false,
+        };
+
+        const { rerender } = renderSingleShippingFormComponent({
+            getFields: () => [...addressFormFields, customField],
+            shippingFormRenderTimestamp: 1,
+        });
+
+        expect(screen.getByTestId('customInput-text')).toHaveValue('BigCommerce');
+
+        rerender(
+            createSingleShippingFormComponent({
+                getFields: () => [
+                    ...addressFormFields,
+                    {
+                        ...customField,
+                        default: 'BigCommerce Sydney',
+                    },
+                ],
+                shippingFormRenderTimestamp: 1,
+            }),
+        );
+
+        expect(screen.getByTestId('customInput-text')).toHaveValue('BigCommerce');
+
+        rerender(
+            createSingleShippingFormComponent({
+                getFields: () => [
+                    ...addressFormFields,
+                    {
+                        ...customField,
+                        default: 'BigCommerce Sydney',
+                    },
+                ],
+                shippingFormRenderTimestamp: 2,
+            }),
+        );
+
+        expect(screen.getByTestId('customInput-text')).toHaveValue('BigCommerce Sydney');
+    });
+
+    it('calls onUnhandledError when empty cart error is thrown', async () => {
+        const onUnhandledError = jest.fn();
+        const emptyCartError = {
+            type: 'empty_cart',
+            message: 'Cart is empty',
+        } as any;
+
+        const updateShippingAddress = jest.fn().mockRejectedValue(emptyCartError);
+
+        mockUseShipping.mockReturnValue({ ...defaultUseShippingValues, updateShippingAddress });
+        renderSingleShippingFormComponent({ onUnhandledError });
+
+        await userEvent.clear(screen.getByTestId('addressLine1Input-text'));
+        await userEvent.keyboard('foo 1');
+
+        await new Promise((resolve) => setTimeout(resolve, waitingDelay));
+
+        expect(updateShippingAddress).toHaveBeenCalled();
+        expect(onUnhandledError).toHaveBeenCalledWith(emptyCartError);
+    });
+});

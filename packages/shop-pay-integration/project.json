@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/shop-pay-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/shop-pay-integration"],
+      "options": {
+        "jestConfig": "packages/shop-pay-integration/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:integration"]
+}

@@ -1,0 +1,158 @@
+// =============================================================================
+// PAYMENT PROVIDER (Component)
+// =============================================================================
+.paymentProviderHeader-container {
+    align-items: start;
+    display: flex;
+    justify-content: space-between;
+}
+
+.paymentProviderHeader-container-googlePay {
+    align-items: center;
+}
+
+.paymentProviderHeader-subtitleContainer {
+    flex-basis: 100%;
+}
+
+.paymentProviderHeader-nameContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.paymentProviderHeader-img {
+    align-self: center;
+    display: flex;
+    height: fontSize("large");
+    object-fit: contain;
+
+    + .paymentProviderHeader-name {
+        margin-left: spacing("half");
+        white-space: nowrap;
+    }
+}
+
+.paymentProviderHeader-img-applePay {
+    height: fontSize("larger");
+    margin-top: spacing("eighth");
+    margin-left: spacing("quarter");
+}
+
+.paymentProviderHeader-img-googlePay {
+    height: fontSize("larger");
+}
+
+.googlePay-logo {
+    height: remCalc(40px);
+}
+
+.paymentProviderHeader-cc {
+    @include breakpoint("small") {
+        align-items: flex-end;
+        display: flex;
+        flex-grow: 0;
+        flex-shrink: 2;
+    }
+}
+
+.paymentProviderHeader-name {
+    align-items: flex-end;
+    align-self: start;
+    display: flex;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.paymentProviderHeader-poDisabledContainer {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.paymentProviderHeader-poDisabledMessage {
+    color: color("greys", "dark");
+    flex-basis: 100%;
+    font-size: fontSize("smallest");
+    line-height: lineHeight("base");
+}
+
+.paymentMethod--creditCard,
+.paymentMethod--hosted,
+.paymentMethod--walletButton {
+    clear: both;
+    padding: $payment-step-spacing-top 0;
+}
+
+.noPaymentMethods-panel {
+    border: container("border");
+    border-radius: $global-radius;
+    display: flex;
+    min-height: 5rem;
+    text-align: center;
+    margin: spacing("base") 0;
+}
+
+.noPaymentMethods-panel-message {
+    align-self: center;
+    flex: 1;
+    margin: 0;
+    padding: spacing("half");
+}
+
+// KLUDGE: We need this override when Klarna modal is open because
+// `scroll-behavior: smooth` conflicts with the styles injected by Klarna JS,
+// cropping the content of the modal in Firefox as a result.
+body.klarna-payments-fso-open {
+    scroll-behavior: auto;
+}
+
+.stripe-sepa-mandate-disclaimer {
+    margin-bottom: 0;
+    padding-bottom: remCalc(20px);
+}
+
+#stripe-card-field--invalid {
+    border-color: #fa755a;
+}
+
+#stripe-card-field--webkit-autofill {
+    background-color: #fefde5 !important;
+}
+
+.submitButtonContainer {
+    margin-left: 0;
+    width: 100%;
+}
+
+.checkoutcom-sepa-column-container {
+    display: flex;
+    flex: 1;
+    flex-basis: 100%;
+    flex-direction: row;
+    margin-bottom: 0;
+    padding-bottom: remCalc(5px);
+}
+
+.checkoutcom-sepa-column-content {
+    width: 50%;
+}
+
+.checkoutcom-sepa-title {
+    margin-bottom: 0;
+    padding-bottom: remCalc(5px);
+}
+
+.checkoutcom-sepa-line {
+    margin-bottom: 0;
+}
+
+/* Custom payment submit buttons styles */
+.payment-submit-button-bolt {
+    font-size: 16px;
+}
+
+.payment-submit-button-bolt-icon {
+    height: remCalc(12px);
+    margin-right: remCalc(8px);
+    width: remCalc(12px);
+}

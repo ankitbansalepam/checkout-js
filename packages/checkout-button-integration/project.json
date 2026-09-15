@@ -1,0 +1,21 @@
+{
+  "name": "checkout-button-integration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/checkout-button-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/checkout-button-integration"],
+      "options": {
+        "jestConfig": "packages/checkout-button-integration/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:integration", "scope:shared"]
+}

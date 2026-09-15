@@ -1,0 +1,93 @@
+{
+  "name": "core",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/core/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "webpack --mode production"
+      },
+      "dependsOn": [
+        {
+          "target": "generate"
+        },
+        {
+          "target": "build",
+          "dependencies": true
+        }
+      ]
+    },
+    "prerelease-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf dist/",
+          "PRERELEASE=prerelease webpack --mode production"
+        ],
+        "parallel": false
+      },
+      "dependsOn": [
+        {
+          "target": "generate"
+        },
+        {
+          "target": "build",
+          "dependencies": true
+        }
+      ]
+    },
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "MEASURE_SPEED=false webpack --mode development --watch"
+      },
+      "dependsOn": [
+        {
+          "target": "generate"
+        },
+        {
+          "target": "build",
+          "dependencies": true
+        }
+      ]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/core"],
+      "options": {
+        "jestConfig": "packages/core/jest.config.js",
+        "passWithNoTests": false,
+        "runInBand": true
+      },
+      "dependsOn": [
+        {
+          "target": "generate"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "fix": true,
+      "dependsOn": [
+        {
+          "target": "generate"
+        }
+      ]
+    },
+    "generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf packages/core/src/app/generated",
+          "npx nx generate @bigcommerce/checkout/workspace-tools:auto-export --projectName=core",
+          "npx nx generate @bigcommerce/checkout/workspace-tools:polyfill-generator --projectName=core"
+        ],
+        "parallel": false
+      }
+    }
+  },
+  "tags": ["scope:core"]
+}

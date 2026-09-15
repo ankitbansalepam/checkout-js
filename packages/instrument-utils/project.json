@@ -1,0 +1,20 @@
+{
+  "name": "instrument-utils",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/instrument-utils/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/instrument-utils"],
+      "options": {
+        "jestConfig": "packages/instrument-utils/jest.config.js"
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}

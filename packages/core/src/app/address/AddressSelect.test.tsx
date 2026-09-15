@@ -1,0 +1,280 @@
+import '@testing-library/jest-dom';
+import {
+    type CheckoutService,
+    createCheckoutService,
+    type CustomerAddress,
+} from '@bigcommerce/checkout-sdk';
+import { noop } from 'lodash';
+import React from 'react';
+
+import {
+    CheckoutProvider,
+    defaultCapabilities,
+    LocaleContext,
+    type LocaleContextType,
+} from '@bigcommerce/checkout/contexts';
+import { createLocaleContext } from '@bigcommerce/checkout/locale';
+import { fireEvent, render, screen } from '@bigcommerce/checkout/test-utils';
+
+import { getCheckout } from '../checkout/checkouts.mock';
+import { getStoreConfig } from '../config/config.mock';
+import { getB2BCustomer, getCustomer } from '../customer/customers.mock';
+
+import { getAddress, getCustomerAddressB2B } from './address.mock';
+import AddressSelect, { type AddressSelectProps } from './AddressSelect';
+import AddressType from './AddressType';
+import { getAddressContent } from './SingleLineStaticAddress';
+
+describe('AddressSelect component', () => {
+    let checkoutService: CheckoutService;
+    let localeContext: LocaleContextType;
+
+    const renderAddressSelect = (props?: Partial<AddressSelectProps>) => {
+        render(
+            <CheckoutProvider checkoutService={checkoutService}>
+                <LocaleContext.Provider value={localeContext}>
+                    <AddressSelect
+                        addresses={getCustomer().addresses}
+                        onSelectAddress={noop}
+                        onUseNewAddress={noop}
+                        type={AddressType.Billing}
+                        {...props}
+                    />
+                </LocaleContext.Provider>
+            </CheckoutProvider>,
+        );
+    };
+
+    const b2bAddresses = getB2BCustomer().addresses;
+
+    const mockB2BAddresses: CustomerAddress[] = [
+        ...b2bAddresses,
+        ...[100, 101, 102].map((id) => ({
+            ...getAddress(),
+            id,
+            type: 'company',
+            address1: `${id} Extra Billing Way`,
+            ...getCustomerAddressB2B({ isBilling: true }),
+        })),
+    ];
+
+    const mockCapabilities = (capabilities: Partial<typeof defaultCapabilities>) => {
+        const storeConfig = getStoreConfig();
+
+        jest.spyOn(checkoutService.getState().data, 'getConfig').mockReturnValue({
+            ...storeConfig,
+            checkoutSettings: {
+                ...storeConfig.checkoutSettings,
+                capabilities: {
+                    ...defaultCapabilities,
+                    ...capabilities,
+                },
+            },
+        });
+    };
+
+    beforeEach(() => {
+        checkoutService = createCheckoutService();
+        localeContext = createLocaleContext(getStoreConfig());
+
+        jest.spyOn(checkoutService.getState().data, 'getCheckout').mockReturnValue(getCheckout());
+        jest.spyOn(checkoutService.getState().data, 'getConfig').mockReturnValue(getStoreConfig());
+    });
+
+    it('renders `Enter Address` when there is no selected address', () => {
+        renderAddressSelect();
+
+        expect(screen.getByText('Enter a new address')).toBeInTheDocument();
+    });
+
+    it('renders `Select an address` when there is no selected address and manual address entry is restricted', () => {
+        const storeConfig = getStoreConfig();
+
+        jest.spyOn(checkoutService.getState().data, 'getConfig').mockReturnValue({
+            ...storeConfig,
+            checkoutSettings: {
+                ...storeConfig.checkoutSettings,
+                capabilities: {
+                    ...defaultCapabilities,
+                    billing: {
+                        ...defaultCapabilities.billing,
+                        restrictManualAddressEntry: true,
+                    },
+                },
+            },
+        });
+
+        renderAddressSelect({ type: AddressType.Billing });
+
+        expect(screen.getByTestId('address-select-placeholder')).toHaveTextContent(
+            'Select an address',
+        );
+        expect(screen.queryByText('Enter a new address')).not.toBeInTheDocument();
+    });
+
+    it('renders `Enter Address` when manual address entry is only restricted for the other address type', () => {
+        const storeConfig = getStoreConfig();
+
+        jest.spyOn(checkoutService.getState().data, 'getConfig').mockReturnValue({
+            ...storeConfig,
+            checkoutSettings: {
+                ...storeConfig.checkoutSettings,
+                capabilities: {
+                    ...defaultCapabilities,
+                    shipping: {
+                        ...defaultCapabilities.shipping,
+                        restrictManualAddressEntry: true,
+                    },
+                },
+            },
+        });
+
+        renderAddressSelect({ type: AddressType.Billing });
+
+        expect(screen.getByTestId('address-select-placeholder')).toHaveTextContent(
+            'Enter a new address',
+        );
+    });
+
+    it('renders static address when there is a selected address', () => {
+        const selectedAddress = getAddress();
+
+        renderAddressSelect({ selectedAddress });
+
+        expect(screen.getByTestId('static-address')).toBeInTheDocument();
+        expect(screen.getByText(selectedAddress.firstName)).toBeInTheDocument();
+        expect(screen.getByText(selectedAddress.lastName)).toBeInTheDocument();
+    });
+
+    it('renders single line static address when there is a selected address and showSingleLineAddress is true', () => {
+        const selectedAddress = getAddress();
+
+        renderAddressSelect({ selectedAddress, showSingleLineAddress: true });
+
+        expect(screen.getByTestId('static-address')).toBeInTheDocument();
+        expect(screen.getByText(getAddressContent(selectedAddress))).toBeInTheDocument();
+    });
+
+    it('renders addresses menu when select component is clicked', () => {
+        const selectedAddress = getAddress();
+
+        renderAddressSelect({ selectedAddress });
+
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(screen.getByTestId('address-select-button'));
+
+        // INFO: there 4 'static-address' component should be in the document
+        // 1st one is located in Address select button (head of dropdown)
+        // The remaining 3 are part of the dropdown options for addresses
+        expect(screen.getAllByTestId('static-address')).toHaveLength(4);
+        expect(screen.getByText('Enter a new address')).toBeInTheDocument();
+    });
+
+    it('triggers appropriate callbacks when an item is selected', () => {
+        const onSelectAddress = jest.fn();
+        const onUseNewAddress = jest.fn();
+
+        renderAddressSelect({ onSelectAddress, onUseNewAddress });
+
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(screen.getByTestId('address-select-button'));
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(screen.getByTestId('add-new-address'));
+
+        expect(onUseNewAddress).toHaveBeenCalled();
+
+        const firstAddressOption = screen.getAllByTestId('address-select-option-action')[0];
+
+        expect(firstAddressOption).toBeInTheDocument();
+
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(firstAddressOption);
+
+        expect(onSelectAddress).toHaveBeenCalledWith(getCustomer().addresses[0]);
+    });
+
+    it('does not trigger onSelectAddress callback if same address is selected', () => {
+        const onSelectAddress = jest.fn();
+        const selectedAddress = getCustomer().addresses[0];
+
+        renderAddressSelect({ onSelectAddress, selectedAddress });
+
+        const addressSelectButton = screen.getByTestId('address-select-button');
+
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(addressSelectButton);
+
+        const firstAddressOption = screen.getAllByTestId('address-select-option-action')[0];
+
+        expect(firstAddressOption).toBeInTheDocument();
+
+        // TODO: update with userEvent and investigate range.cloneRange() issue
+        fireEvent.click(firstAddressOption);
+
+        expect(onSelectAddress).not.toHaveBeenCalled();
+    });
+
+    it('renders searchable menu when company address book has enough addresses of the step type', () => {
+        mockCapabilities({
+            userJourney: { ...defaultCapabilities.userJourney, hasCompanyAddressBook: true },
+        });
+
+        renderAddressSelect({ addresses: mockB2BAddresses });
+
+        fireEvent.click(screen.getByTestId('address-select-button'));
+
+        expect(screen.getByRole('textbox', { name: 'Search addresses' })).toBeInTheDocument();
+    });
+
+    it('renders plain menu with type-matching addresses when below the search limit', () => {
+        mockCapabilities({
+            userJourney: { ...defaultCapabilities.userJourney, hasCompanyAddressBook: true },
+        });
+
+        renderAddressSelect({ addresses: b2bAddresses });
+
+        fireEvent.click(screen.getByTestId('address-select-button'));
+
+        expect(screen.queryByRole('textbox', { name: 'Search addresses' })).not.toBeInTheDocument();
+        expect(screen.getAllByTestId('address-select-option')).toHaveLength(
+            b2bAddresses.filter((address) => address.isBilling).length,
+        );
+        expect(screen.queryByText('Shipping Only Way')).not.toBeInTheDocument();
+    });
+
+    it('hides "Enter a new address" menu item when manual address entry is restricted', () => {
+        mockCapabilities({
+            userJourney: { ...defaultCapabilities.userJourney, hasCompanyAddressBook: true },
+            billing: { ...defaultCapabilities.billing, restrictManualAddressEntry: true },
+        });
+
+        renderAddressSelect({ addresses: b2bAddresses });
+
+        fireEvent.click(screen.getByTestId('address-select-button'));
+
+        expect(screen.getAllByTestId('address-select-option')).not.toHaveLength(0);
+        expect(screen.queryByTestId('add-new-address')).not.toBeInTheDocument();
+    });
+
+    it('shows Powered By PP Fastlane label', () => {
+        const defaultStoreConfig = getStoreConfig();
+
+        jest.spyOn(checkoutService.getState().data, 'getConfig').mockReturnValue({
+            ...defaultStoreConfig,
+            checkoutSettings: {
+                ...defaultStoreConfig.checkoutSettings,
+                providerWithCustomCheckout: 'paypalcommerceacceleratedcheckout',
+            },
+        });
+
+        jest.spyOn(checkoutService.getState().data, 'getPaymentProviderCustomer').mockReturnValue({
+            authenticationState: 'succeeded',
+            addresses: [getAddress()],
+            instruments: [],
+        });
+
+        renderAddressSelect();
+
+        expect(screen.getByTestId('paypal-fastlane-icon')).toBeInTheDocument();
+    });
+});

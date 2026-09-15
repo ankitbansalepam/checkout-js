@@ -1,0 +1,341 @@
+aliases:
+  - &node_executor
+      executor:
+        name: node/node
+        node-version: "22.13.0"
+
+  - &release_filter
+      branches:
+        only:
+          - master
+
+  - &pull_request_filter
+      branches:
+        ignore:
+          - master
+
+  - &canonical_pull_request_filter
+      branches:
+        ignore:
+          - master
+          - /pull\/[0-9]+/
+
+version: 2.1
+
+orbs:
+  ci: bigcommerce/internal@volatile
+  node: bigcommerce/internal-node@volatile
+  security: bigcommerce/internal-security@volatile
+  microapp: bigcommerce/internal-microapp@volatile
+
+executors:
+  playwright_executor:
+    docker:
+      - image: mcr.microsoft.com/playwright:v1.56.1-noble
+
+jobs:
+  test-packages:
+    <<: *node_executor
+    resource_class: medium+
+    parallelism: 4
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Run unit tests for packages"
+          command: |
+            npx nx run-many --target=test --exclude=core,checkout-extension,instrument-utils -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:others -- --ci --files" \
+              --verbose \
+              --split-by=timings
+      - run:
+          command: node scripts/nx/collect-test-results.js
+          when: always
+      - store_test_results:
+          path: test-results
+
+  test-extension:
+    <<: *node_executor
+    parallelism: 2
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Run unit tests for checkout extension"
+          command: |
+            npx nx run-many --target=test --projects=instrument-utils,checkout-extension -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:extension -- --ci --files" \
+              --verbose \
+              --split-by=timings
+      - run:
+          command: node scripts/nx/collect-test-results.js
+          when: always
+      - store_test_results:
+          path: test-results
+
+  test-core:
+    <<: *node_executor
+    parallelism: 4
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Run unit tests for core package"
+          command: |
+            npx nx run core:generate
+            npx nx test core -- --listTests | grep packages/ | sed "s|$(pwd)/||" | \
+            circleci tests run \
+              --command="xargs npm run test:core -- --ci --files" \
+              --verbose \
+              --split-by=timings
+      - run:
+          command: node scripts/nx/collect-test-results.js
+          when: always
+      - store_test_results:
+          path: test-results
+
+  lint:
+    <<: *node_executor
+    resource_class: medium+
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Run lint"
+          command: npm run lint
+
+  build:
+    <<: *node_executor
+    resource_class: medium+
+    parameters:
+      prerelease:
+        type: boolean
+        default: false
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Build artifacts"
+          command: |
+            if [ << parameters.prerelease >> = true ]; then
+              npm run nx:prerelease-build
+            else
+              npm run build
+            fi
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  e2e:
+    executor: playwright_executor
+    parallelism: 2
+    resource_class: medium+
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Run e2e tests"
+          command: |
+            TESTFILES=$(circleci tests glob "packages/*/e2e/**/*.spec.ts")
+            echo "$TESTFILES" | \
+            circleci tests run \
+              --command="xargs npx playwright test --config=playwright.config.ts" \
+              --verbose \
+              --split-by=timings
+      - store_test_results:
+          path: packages/test-framework/test-results/junit.xml
+      - store_artifacts:
+          path: packages/test-framework/report
+          destination: artifact-file
+      - store_artifacts:
+          path: packages/test-framework/screenshots
+
+  sdk-on-cdn:
+    <<: *node_executor
+    steps:
+      - ci/pre-setup
+      - run:
+          name: "Check SDK version on CDN"
+          command: ./scripts/sdk-live-checker.sh
+
+  release:
+    <<: *node_executor
+    steps:
+      - ci/pre-setup
+      - node/npm-install
+      - run:
+          name: "Configure Git user"
+          command: |
+            git config user.email $GIT_USER_EMAIL
+            git config user.name $GIT_USER_NAME
+      - run:
+          name: "Remove old release files"
+          command: rm -rf dist
+      - attach_workspace:
+          at: .
+      - run:
+          name: "Create and tag new release"
+          command: npm run release:version
+      - run:
+          name: "Push commits and tag to GitHub"
+          command: |
+            git push --follow-tags origin $CIRCLE_BRANCH
+      - run:
+          name: "Export release version to file"
+          command: |
+            echo "export RELEASE_VERSION=$(git describe --abbrev=0)" > /tmp/release_version.txt
+            echo "export RELEASE_REVISION=$(git rev-parse HEAD)" >> /tmp/release_version.txt
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - release_version.txt
+
+  upload_to_sentry:
+    <<: *node_executor
+    steps:
+      - ci/pre-setup
+      - run:
+          name: "Install Sentry cli"
+          command: curl -sL https://sentry.io/get-cli/ | bash
+      - attach_workspace:
+          at: /tmp
+      - run:
+          name: "Upload source maps to Sentry"
+          command: |
+            source /tmp/release_version.txt
+            git checkout $RELEASE_VERSION
+            SENTRY_RELEASE=$SENTRY_PROJECT@${RELEASE_VERSION#v}
+            SENTRY_COMMIT=$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME@$RELEASE_REVISION
+            sentry-cli releases --project $SENTRY_PROJECT --org $SENTRY_ORG new $SENTRY_RELEASE
+            sentry-cli releases --project $SENTRY_PROJECT --org $SENTRY_ORG set-commits $SENTRY_RELEASE --commit $SENTRY_COMMIT
+            sentry-cli sourcemaps upload --project $SENTRY_PROJECT --org $SENTRY_ORG --release $SENTRY_RELEASE dist
+            sentry-cli releases --project $SENTRY_PROJECT --org $SENTRY_ORG finalize $SENTRY_RELEASE
+
+  upload-artifact:
+    <<: *node_executor
+    steps:
+      - ci/pre-setup
+      - attach_workspace:
+          at: .
+      - ci/create_artifact_tar
+      - ci/gcloud_login
+      - ci/upload_artifact:
+          project_name: "${CIRCLE_PROJECT_REPONAME}"
+
+workflows:
+  version: 2
+
+  pull_request:
+    jobs:
+      - test-packages:
+          filters:
+            <<: *pull_request_filter
+      - test-extension:
+          filters:
+            <<: *pull_request_filter
+      - test-core:
+          filters:
+            <<: *pull_request_filter
+      - build:
+          name: build-prerelease
+          prerelease: true
+          filters:
+            <<: *pull_request_filter
+      - lint:
+          filters:
+            <<: *pull_request_filter
+      - e2e:
+          filters:
+            <<: *pull_request_filter
+          requires:
+            - build-prerelease
+      - security/scan:
+          name: "Gitleaks secrets scan"
+          filters:
+            <<: *canonical_pull_request_filter
+          context: org-global
+          GITLEAKS_BLOCK: "false"
+      - upload-artifact:
+          filters:
+            <<: *canonical_pull_request_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - test-core
+            - test-packages
+            - test-extension
+            - lint
+            - build-prerelease
+            - e2e
+            - "Gitleaks secrets scan"
+      - ci/notify-success:
+          filters:
+            <<: *canonical_pull_request_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - upload-artifact
+
+  release:
+    jobs:
+      - test-core:
+          filters:
+            <<: *release_filter
+      - test-packages:
+          filters:
+            <<: *release_filter
+      - test-extension:
+          filters:
+            <<: *release_filter
+      - lint:
+          filters:
+            <<: *release_filter
+      - build:
+          filters:
+            <<: *release_filter
+      - e2e:
+          filters:
+            <<: *release_filter
+          requires:
+            - build
+      - sdk-on-cdn:
+          filters:
+            <<: *release_filter
+      - security/scan:
+          name: "Gitleaks secrets scan"
+          filters:
+            <<: *release_filter
+          context: org-global
+          GITLEAKS_BLOCK: "false"
+      - release:
+          filters:
+            <<: *release_filter
+          requires:
+            - test-core
+            - test-packages
+            - test-extension
+            - lint
+            - build
+            - e2e
+            - sdk-on-cdn
+            - "Gitleaks secrets scan"
+      - upload_to_sentry:
+          filters:
+            <<: *release_filter
+          requires:
+            - release
+      - upload-artifact:
+          filters:
+            <<: *release_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - release
+      - ci/notify-success:
+          filters:
+            <<: *release_filter
+          context: GCR + Artifact Bucket Access
+          requires:
+            - upload-artifact

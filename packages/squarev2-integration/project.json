@@ -1,0 +1,21 @@
+{
+  "name": "squarev2-integration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/squarev2-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/squarev2-integration"],
+      "options": {
+        "jestConfig": "packages/squarev2-integration/jest.config.js",
+        "passWithNoTests": false
+      }
+    }
+  },
+  "tags": ["scope:integration"]
+}

@@ -1,0 +1,519 @@
+import {
+    type Capabilities,
+    ExtensionRegion,
+    type FormField,
+    type PaymentMethod,
+} from '@bigcommerce/checkout-sdk/essential';
+import { type FormikProps, type FormikState, withFormik, type WithFormikConfig } from 'formik';
+import { isEmpty, noop, omitBy } from 'lodash';
+import React, {
+    type FunctionComponent,
+    memo,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+} from 'react';
+import { object, type ObjectSchema, string } from 'yup';
+
+import { Extension } from '@bigcommerce/checkout/checkout-extension';
+import { useCapabilities, useCheckout, useThemeContext } from '@bigcommerce/checkout/contexts';
+import {
+    TranslatedString,
+    withLanguage,
+    type WithLanguageProps,
+} from '@bigcommerce/checkout/locale';
+import { type PaymentFormValues } from '@bigcommerce/checkout/payment-integration-api';
+import {
+    getShopPayBackendUrl,
+    ShopPayCheckoutControl,
+} from '@bigcommerce/checkout/shop-pay-integration';
+import { Fieldset, Form, FormContext, Legend } from '@bigcommerce/checkout/ui';
+import { B2BSessionStorage } from '@bigcommerce/checkout/utility';
+
+import { getTranslateAddressError } from '../address';
+import { isFloatingLabelEnabled } from '../common/utility';
+import { getOrderExtraFieldsValidationSchema } from '../formFields';
+import { TermsConditions } from '../termsConditions';
+
+import AdditionalPaymentField from './AdditionalPaymentField';
+import { PaymentBillingBlock } from './billingForm';
+import getPaymentValidationSchema from './getPaymentValidationSchema';
+import InvoicePaymentCommentField from './InvoicePaymentCommentField';
+import { NoPaymentMethods } from './NoPaymentMethods';
+import { getInitialOrderExtraFieldsValues, OrderExtraFieldsFieldset } from './orderExtraFields';
+import {
+    getPaymentMethodName,
+    getUniquePaymentMethodId,
+    PaymentMethodId,
+    PaymentMethodList,
+    useFallbackWhenMethodRemoved,
+    usePoMethodDisabledReason,
+} from './paymentMethod';
+import {
+    PaymentMethodsRefreshAlert,
+    type PaymentMethodsRefreshAlertData,
+} from './PaymentMethodsRefreshAlert';
+import PaymentRedeemables from './PaymentRedeemables';
+import PaymentSubmitButton from './PaymentSubmitButton';
+import { ProvidersSectionOnTopOfPaymentsList } from './ProvidersSectionOnTopOfPaymentsList';
+import SpamProtectionField from './SpamProtectionField';
+import { StoreCreditField, StoreCreditOverlay } from './storeCredit';
+
+import './PaymentForm.scss';
+
+export interface PaymentFormProps {
+    additionalField?: Capabilities['payment']['additionalField'];
+    availableStoreCredit?: number;
+    bcOrderId?: number;
+    onShopPayPaymentComplete?(orderId?: number, confirmationToken?: string): void;
+    disableStoreCredit?: boolean;
+    defaultGatewayId?: string;
+    defaultMethodId: string;
+    didExceedSpamLimit?: boolean;
+    isBillingSameAsShipping?: boolean;
+    isEmbedded?: boolean;
+    isInitializingPayment?: boolean;
+    isReloadingPaymentMethods?: boolean;
+    isTermsConditionsRequired?: boolean;
+    isUsingMultiShipping?: boolean;
+    isStoreCreditApplied: boolean;
+    methods: PaymentMethod[];
+    methodsRefreshAlert?: PaymentMethodsRefreshAlertData;
+    orderExtraFields?: FormField[];
+    selectedMethod?: PaymentMethod;
+    shouldShowStoreCredit?: boolean;
+    shouldDisableSubmit?: boolean;
+    shouldHidePaymentSubmitButton?: boolean;
+    shouldExecuteSpamCheck?: boolean;
+    termsConditionsText?: string;
+    termsConditionsUrl?: string;
+    usableStoreCredit?: number;
+    validationSchema?: ObjectSchema<Partial<PaymentFormValues>>;
+    isPaymentDataRequired(): boolean;
+    onBillingSameAsShippingChange?(isBillingSameAsShipping: boolean): void;
+    onMethodSelect?(method: PaymentMethod): void;
+    onMethodsRefreshAlertDismiss?(): void;
+    onStoreCreditChange?(useStoreCredit?: boolean): void;
+    onSubmit?(values: PaymentFormValues): void;
+    onUnhandledError?(error: Error): void;
+}
+
+const PaymentForm: FunctionComponent<
+    PaymentFormProps & FormikProps<PaymentFormValues> & WithLanguageProps
+> = ({
+    additionalField,
+    availableStoreCredit = 0,
+    bcOrderId,
+    onShopPayPaymentComplete,
+    disableStoreCredit = false,
+    didExceedSpamLimit,
+    isBillingSameAsShipping,
+    isEmbedded,
+    isInitializingPayment,
+    isPaymentDataRequired,
+    isReloadingPaymentMethods,
+    isTermsConditionsRequired,
+    isStoreCreditApplied,
+    isUsingMultiShipping,
+    language,
+    methods,
+    methodsRefreshAlert,
+    onBillingSameAsShippingChange,
+    onMethodSelect,
+    onMethodsRefreshAlertDismiss,
+    onStoreCreditChange,
+    onUnhandledError,
+    orderExtraFields,
+    resetForm,
+    selectedMethod,
+    setFieldValue,
+    shouldDisableSubmit,
+    shouldHidePaymentSubmitButton,
+    shouldExecuteSpamCheck,
+    termsConditionsText = '',
+    termsConditionsUrl,
+    usableStoreCredit = 0,
+    values,
+}) => {
+    const selectedMethodId = useMemo(() => {
+        if (!selectedMethod) {
+            return;
+        }
+
+        switch (selectedMethod.id) {
+            case PaymentMethodId.AmazonPay:
+                if (selectedMethod.initializationData.paymentToken) {
+                    return;
+                }
+
+                return selectedMethod.id;
+
+            default:
+                return selectedMethod.id;
+        }
+    }, [selectedMethod]);
+
+    const brandName = useMemo(() => {
+        if (!selectedMethod) {
+            return;
+        }
+
+        return (
+            selectedMethod.initializationData?.payPalCreditProductBrandName?.credit ||
+            selectedMethod.initializationData?.payPalCreditProductBrandName
+        );
+    }, [selectedMethod]);
+
+    const { selectedState: config } = useCheckout(({ data }) => data.getConfig());
+    const { enhancedThemeV1 } = useThemeContext();
+    const {
+        payment: { invoicePaymentComment },
+    } = useCapabilities();
+    const { checkoutSettings } = config ?? {};
+    const shopPayBackendUrl = getShopPayBackendUrl();
+    const isFloatingLabelEnabledValue = checkoutSettings
+        ? isFloatingLabelEnabled(checkoutSettings)
+        : false;
+    const poMethodDisabledReason = usePoMethodDisabledReason(selectedMethod);
+    const isSubmitDisabled = shouldDisableSubmit || Boolean(poMethodDisabledReason);
+    const hideSubmitPaymentButton =
+        shouldHidePaymentSubmitButton || (isPaymentDataRequired() && isEmpty(methods));
+
+    const methodListRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isReloadingPaymentMethods) {
+            return;
+        }
+
+        try {
+            methodListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } catch {
+            methodListRef.current?.scrollIntoView();
+        }
+    }, [isReloadingPaymentMethods]);
+
+    if (shouldExecuteSpamCheck) {
+        return (
+            <SpamProtectionField
+                didExceedSpamLimit={didExceedSpamLimit}
+                onUnhandledError={onUnhandledError}
+            />
+        );
+    }
+
+    return (
+        <Form className="checkout-form" testId="payment-form">
+            {usableStoreCredit > 0 && !disableStoreCredit && (
+                <StoreCreditField
+                    availableStoreCredit={availableStoreCredit}
+                    isStoreCreditApplied={isStoreCreditApplied}
+                    name="useStoreCredit"
+                    onChange={onStoreCreditChange}
+                    usableStoreCredit={usableStoreCredit}
+                />
+            )}
+
+            <div ref={methodListRef}>
+                {methodsRefreshAlert && (
+                    <PaymentMethodsRefreshAlert
+                        alert={methodsRefreshAlert}
+                        onDismiss={onMethodsRefreshAlertDismiss ?? noop}
+                    />
+                )}
+            </div>
+
+            {isEmpty(methods) &&
+                (isPaymentDataRequired() ? (
+                    <NoPaymentMethods
+                        message={
+                            <TranslatedString id="payment.payment_methods_unavailable_error" />
+                        }
+                    />
+                ) : (
+                    <NoPaymentMethods
+                        message={<TranslatedString id="payment.payment_not_required_text" />}
+                    />
+                ))}
+
+            {!isEmpty(methods) && (
+                <PaymentMethodListFieldset
+                    isEmbedded={isEmbedded}
+                    isInitializingPayment={isInitializingPayment}
+                    isPaymentDataRequired={isPaymentDataRequired}
+                    isUsingMultiShipping={isUsingMultiShipping}
+                    methods={methods}
+                    onMethodSelect={onMethodSelect}
+                    onUnhandledError={onUnhandledError}
+                    resetForm={resetForm}
+                    selectedMethodUniqueId={
+                        selectedMethod &&
+                        getUniquePaymentMethodId(selectedMethod.id, selectedMethod.gateway)
+                    }
+                    setFieldValue={setFieldValue}
+                    values={values}
+                />
+            )}
+
+            {shopPayBackendUrl && (
+                <div className="shopPayCheckoutControl">
+                    <ShopPayCheckoutControl
+                        backendUrl={shopPayBackendUrl}
+                        bcOrderId={bcOrderId}
+                        onPaymentComplete={onShopPayPaymentComplete}
+                        onError={onUnhandledError}
+                    />
+                </div>
+            )}
+
+            {enhancedThemeV1 && (
+                <PaymentBillingBlock
+                    isBillingSameAsShipping={isBillingSameAsShipping ?? true}
+                    methodId={selectedMethod?.id}
+                    onBillingSameAsShippingChange={onBillingSameAsShippingChange ?? noop}
+                    onUnhandledError={onUnhandledError ?? noop}
+                />
+            )}
+
+            <PaymentRedeemables />
+
+            {additionalField && (
+                <AdditionalPaymentField
+                    isFloatingLabelEnabled={isFloatingLabelEnabledValue}
+                    isRequired={additionalField.required}
+                    label={additionalField.label}
+                />
+            )}
+
+            {isTermsConditionsRequired && (
+                <TermsConditions
+                    termsConditionsText={termsConditionsText}
+                    termsConditionsUrl={termsConditionsUrl}
+                />
+            )}
+
+            {orderExtraFields && orderExtraFields.length > 0 && (
+                <OrderExtraFieldsFieldset
+                    formFields={orderExtraFields}
+                    isFloatingLabelEnabled={isFloatingLabelEnabledValue}
+                />
+            )}
+
+            {invoicePaymentComment && (
+                <InvoicePaymentCommentField isFloatingLabelEnabled={isFloatingLabelEnabledValue} />
+            )}
+
+            <div className="form-actions">
+                {hideSubmitPaymentButton ? (
+                    <PaymentMethodSubmitButtonContainer />
+                ) : (
+                    <PaymentSubmitButton
+                        brandName={brandName}
+                        initialisationStrategyType={
+                            selectedMethod && selectedMethod.initializationStrategy?.type
+                        }
+                        isComplete={!!selectedMethod?.initializationData?.isComplete}
+                        isDisabled={isSubmitDisabled}
+                        methodGateway={selectedMethod && selectedMethod.gateway}
+                        methodId={selectedMethodId}
+                        methodName={
+                            selectedMethod && getPaymentMethodName(language)(selectedMethod)
+                        }
+                        methodType={selectedMethod && selectedMethod.method}
+                    />
+                )}
+            </div>
+        </Form>
+    );
+};
+
+const PaymentMethodSubmitButtonContainer: FunctionComponent = () => {
+    return <div className="submitButtonContainer" id="checkout-payment-continue" />;
+};
+
+interface PaymentMethodListFieldsetProps {
+    isEmbedded?: boolean;
+    isInitializingPayment?: boolean;
+    isUsingMultiShipping?: boolean;
+    methods: PaymentMethod[];
+    selectedMethodUniqueId?: string;
+    values: PaymentFormValues;
+    isPaymentDataRequired(): boolean;
+    onMethodSelect?(method: PaymentMethod): void;
+    onUnhandledError?(error: Error): void;
+    resetForm(nextValues?: Partial<FormikState<PaymentFormValues>>): void;
+    setFieldValue(field: string, value: string): void;
+}
+
+const PaymentMethodListFieldset: FunctionComponent<PaymentMethodListFieldsetProps> = ({
+    isEmbedded,
+    isInitializingPayment,
+    isPaymentDataRequired,
+    isUsingMultiShipping,
+    methods,
+    onMethodSelect = noop,
+    onUnhandledError,
+    resetForm,
+    selectedMethodUniqueId,
+    values,
+    setFieldValue,
+}) => {
+    const { setSubmitted } = useContext(FormContext);
+    const { enhancedThemeV1 } = useThemeContext();
+
+    const handlePaymentMethodSelect = useCallback(
+        (method: PaymentMethod) => {
+            const updatedValues = {
+                ...values,
+                ccCustomerCode: '',
+                ccCvv: '',
+                ccDocument: '',
+                customerEmail: '',
+                customerMobile: '',
+                ccExpiry: '',
+                ccName: '',
+                ccNumber: '',
+                instrumentId: '',
+                paymentProviderRadio: getUniquePaymentMethodId(method.id, method.gateway),
+                shouldCreateAccount: true,
+                shouldSaveInstrument: false,
+            };
+
+            resetForm({ values: updatedValues });
+            setSubmitted(false);
+            onMethodSelect(method);
+        },
+        [values, onMethodSelect, resetForm, setSubmitted],
+    );
+
+    useFallbackWhenMethodRemoved(
+        methods,
+        values.paymentProviderRadio,
+        selectedMethodUniqueId,
+        (fallbackUniqueId) => setFieldValue('paymentProviderRadio', fallbackUniqueId),
+    );
+
+    return (
+        <Fieldset
+            legend={
+                <Legend hidden={enhancedThemeV1}>
+                    <TranslatedString id="payment.payment_methods_text" />
+                </Legend>
+            }
+        >
+            {!isPaymentDataRequired() && <StoreCreditOverlay />}
+
+            <Extension region={ExtensionRegion.PaymentPaymentMethodListBefore} />
+
+            <ProvidersSectionOnTopOfPaymentsList methods={methods} />
+
+            <PaymentMethodList
+                isEmbedded={isEmbedded}
+                isInitializingPayment={isInitializingPayment}
+                isUsingMultiShipping={isUsingMultiShipping}
+                methods={methods}
+                onSelect={handlePaymentMethodSelect}
+                onUnhandledError={onUnhandledError}
+            />
+        </Fieldset>
+    );
+};
+
+const paymentFormConfig: WithFormikConfig<PaymentFormProps & WithLanguageProps, PaymentFormValues> =
+    {
+        mapPropsToValues: ({ defaultGatewayId, defaultMethodId, orderExtraFields }) => {
+            // Restores the B2B values captured at submit time when the shopper
+            // comes back from an off-site payment redirect.
+            const storedPaymentValues = B2BSessionStorage.getPaymentValues();
+
+            return {
+                ccCustomerCode: '',
+                ccCvv: '',
+                ccDocument: '',
+                customerEmail: '',
+                customerMobile: '',
+                ccExpiry: '',
+                ccName: '',
+                ccNumber: '',
+                paymentProviderRadio: getUniquePaymentMethodId(defaultMethodId, defaultGatewayId),
+                instrumentId: '',
+                shouldCreateAccount: true,
+                shouldSaveInstrument: false,
+                terms: false,
+                hostedForm: {
+                    cardType: '',
+                    errors: {
+                        cardCode: '',
+                        cardCodeVerification: '',
+                        cardExpiry: '',
+                        cardName: '',
+                        cardNumber: '',
+                        cardNumberVerification: '',
+                    },
+                },
+                accountNumber: '',
+                routingNumber: '',
+                orderExtraFields: getInitialOrderExtraFieldsValues(
+                    orderExtraFields,
+                    storedPaymentValues?.orderExtraFields,
+                ),
+                invoicePaymentComment: storedPaymentValues?.invoicePaymentComment ?? '',
+                additionalPaymentField: storedPaymentValues?.additionalPaymentField ?? '',
+            };
+        },
+
+        handleSubmit: (values, { props: { onSubmit = noop } }) => {
+            onSubmit(
+                omitBy(
+                    values,
+                    (value, key) => value == null || value === '' || key === 'hostedForm',
+                ),
+            );
+        },
+
+        validationSchema: ({
+            additionalField,
+            isPaymentDataRequired,
+            language,
+            isTermsConditionsRequired = false,
+            orderExtraFields,
+            validationSchema,
+        }: PaymentFormProps & WithLanguageProps) => {
+            const paymentSchema = getPaymentValidationSchema({
+                additionalValidation: validationSchema,
+                isPaymentDataRequired: isPaymentDataRequired(),
+                isTermsConditionsRequired,
+                language,
+            });
+
+            const withOrderExtraFields =
+                orderExtraFields && orderExtraFields.length > 0
+                    ? paymentSchema.concat(
+                          getOrderExtraFieldsValidationSchema({
+                              formFields: orderExtraFields,
+                              translate: getTranslateAddressError(orderExtraFields, language),
+                          }),
+                      )
+                    : paymentSchema;
+
+            if (additionalField?.required) {
+                return withOrderExtraFields.concat(
+                    object({
+                        additionalPaymentField: string()
+                            .trim()
+                            .required(
+                                language.translate('payment.errors.field_required_error', {
+                                    label: additionalField.label,
+                                }),
+                            ),
+                    }) as ObjectSchema<Partial<PaymentFormValues>>,
+                );
+            }
+
+            return withOrderExtraFields;
+        },
+    };
+
+export default withLanguage(withFormik(paymentFormConfig)(memo(PaymentForm)));

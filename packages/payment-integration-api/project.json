@@ -1,0 +1,20 @@
+{
+  "name": "payment-integration-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/payment-integration-api/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/payment-integration-api"],
+      "options": {
+        "jestConfig": "packages/payment-integration-api/jest.config.js"
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}

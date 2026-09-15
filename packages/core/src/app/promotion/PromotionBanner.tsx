@@ -1,0 +1,25 @@
+import DOMPurify from 'dompurify';
+import React, { type FunctionComponent, memo } from 'react';
+
+import { Alert, AlertType, IconTag } from '@bigcommerce/checkout/ui';
+
+export interface PromotionBannerProps {
+    message: string;
+}
+
+const PromotionBanner: FunctionComponent<PromotionBannerProps> = ({ message }) => (
+    <Alert
+        additionalClassName="optimizedCheckout-discountBanner"
+        icon={<IconTag />}
+        type={AlertType.Info}
+    >
+        <span
+            dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(message),
+            }}
+            data-test="promotion-banner-message"
+        />
+    </Alert>
+);
+
+export default memo(PromotionBanner);

@@ -1,0 +1,83 @@
+import React, { type FunctionComponent } from 'react';
+
+import { useCheckout } from '@bigcommerce/checkout/contexts';
+import { preventDefault } from '@bigcommerce/checkout/dom-utils';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+import { IconClose, IconSize } from '@bigcommerce/checkout/ui';
+
+import ConsignmentAddressSelector from './ConsignmentAddressSelector';
+import ConsignmentLineItem from './ConsignmentLineItem';
+import { type MultiShippingConsignmentData } from './MultishippingType';
+import { MultiShippingOptions } from './shippingOption/MultiShippingOptions';
+
+export interface ConsignmentListItemProps {
+    consignment: MultiShippingConsignmentData;
+    consignmentNumber: number;
+    defaultCountryCode?: string;
+    isLoading: boolean;
+    shippingQuoteFailedMessage: string;
+    onUnhandledError(error: Error): void;
+    resetErrorConsignmentNumber(): void;
+}
+
+const ConsignmentListItem: FunctionComponent<ConsignmentListItemProps> = ({
+    consignment,
+    consignmentNumber,
+    defaultCountryCode,
+    isLoading,
+    shippingQuoteFailedMessage,
+    onUnhandledError,
+    resetErrorConsignmentNumber,
+}: ConsignmentListItemProps) => {
+    const {
+        checkoutService: { deleteConsignment },
+    } = useCheckout(() => undefined);
+
+    const handleClose = async () => {
+        await deleteConsignment(consignment.id);
+        resetErrorConsignmentNumber();
+    };
+
+    return (
+        <div className="consignment-container">
+            <div className="consignment-header optimizedCheckout-headingSecondary sub-header">
+                <h3>
+                    <TranslatedString
+                        data={{ consignmentNumber }}
+                        id="shipping.multishipping_consignment_index_heading"
+                    />
+                </h3>
+                <a
+                    className="delete-consignment"
+                    data-test="delete-consignment-button"
+                    href="#"
+                    onClick={preventDefault(handleClose)}
+                >
+                    <IconClose size={IconSize.Small} />
+                </a>
+            </div>
+            <ConsignmentAddressSelector
+                consignment={consignment}
+                defaultCountryCode={defaultCountryCode}
+                isLoading={isLoading}
+                onUnhandledError={onUnhandledError}
+                selectedAddress={consignment.shippingAddress}
+            />
+            <ConsignmentLineItem
+                consignment={consignment}
+                consignmentNumber={consignmentNumber}
+                isLoading={isLoading}
+                onUnhandledError={onUnhandledError}
+            />
+            <MultiShippingOptions
+                consignment={consignment}
+                isLoading={isLoading}
+                onUnhandledError={onUnhandledError}
+                resetErrorConsignmentNumber={resetErrorConsignmentNumber}
+                shippingQuoteFailedMessage={shippingQuoteFailedMessage}
+            />
+        </div>
+    );
+};
+
+export default ConsignmentListItem;
