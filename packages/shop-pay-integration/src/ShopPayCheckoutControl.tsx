@@ -22,23 +22,24 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
 }) => {
     const { checkoutService } = useCheckout(() => undefined);
     const {
-        selectedState: { billingAddress, cart, checkout, consignments, coupons },
+        selectedState: { billingAddress, cart, checkout, consignments, coupons, isSignedIn },
     } = useCheckout(({ data }) => ({
         billingAddress: data.getBillingAddress(),
         cart: data.getCart(),
         checkout: data.getCheckout(),
         consignments: data.getConsignments() || [],
         coupons: data.getCoupons() || [],
+        isSignedIn: data.getCustomer()?.isGuest === false,
     }));
 
     if (!cart) {
         return null;
     }
 
-    // Show at the top only when shipping and billing were already known when checkout
-    // loaded (e.g. a signed-in shopper with saved addresses). A shopper who fills them in
-    // during checkout keeps Shop Pay in the payment methods, so the button doesn't jump to
-    // the top once their addresses are complete.
+    // Show at the top for signed-in shoppers, and when shipping and billing were already
+    // known when checkout loaded. A guest who fills them in during checkout keeps Shop Pay
+    // in the payment methods, so the button doesn't jump to the top once their addresses
+    // are complete.
     const hasBillingAddress = Boolean(billingAddress?.address1 && billingAddress.countryCode);
     const hasSelectedShipping =
         cart.lineItems.physicalItems.length === 0 ||
@@ -49,7 +50,7 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         initialReadinessByCartId.set(cart.id, hasBillingAddress && hasSelectedShipping);
     }
 
-    const isReadyForTop = initialReadinessByCartId.get(cart.id);
+    const isReadyForTop = isSignedIn || initialReadinessByCartId.get(cart.id);
 
     if ((placement === 'top') !== isReadyForTop) {
         return null;
@@ -109,8 +110,14 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         };
         const cartItems = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
 
+        // A signed-in shopper can open Shop Pay from the top before checkout has a
+        // consignment; create one for the whole cart from the Shop Pay address.
+        if (!consignments.length && cart.lineItems.physicalItems.length) {
+            await checkoutService.updateShippingAddress(shippingAddress);
+        }
+
         await Promise.all(
-            (consignments || []).map((consignment) =>
+            consignments.map((consignment) =>
                 checkoutService.updateConsignment({
                     id: consignment.id,
                     address: shippingAddress,

@@ -17,6 +17,7 @@ jest.mock('@bigcommerce/checkout/contexts', () => ({
                 getCheckout: () => ({ taxTotal: 0 }),
                 getConsignments: () => checkoutData.consignments,
                 getCoupons: () => [],
+                getCustomer: () => checkoutData.customer,
             },
         }),
     }),
@@ -105,7 +106,71 @@ describe('ShopPayCheckoutControl placement when addresses are filled in during c
     });
 });
 
+describe('ShopPayCheckoutControl placement for signed-in shoppers', () => {
+    it('renders only at the top even before addresses are known', () => {
+        checkoutData = {
+            billingAddress: undefined,
+            cart: physicalCart,
+            consignments: [],
+            customer: { isGuest: false },
+        };
+
+        renderAt('top');
+        expect(screen.getByText('Shop Pay')).toBeInTheDocument();
+
+        renderAt('payment');
+        expect(screen.getAllByText('Shop Pay')).toHaveLength(1);
+    });
+});
+
 describe('ShopPayCheckoutControl shipping address change', () => {
+    it('creates a consignment from the Shop Pay address when checkout has none', async () => {
+        const options = [{ id: 'ship-1', isRecommended: true }];
+        let stateConsignments: Array<Record<string, unknown>> = [];
+        const updateShippingAddress = jest.fn(async () => {
+            stateConsignments = [{ id: 'c-1', availableShippingOptions: options }];
+        });
+        const selectConsignmentShippingOption = jest.fn(async (id: string, optionId: string) => {
+            stateConsignments = [
+                { id, availableShippingOptions: options, selectedShippingOption: { id: optionId } },
+            ];
+        });
+
+        checkoutService = {
+            updateShippingAddress,
+            updateConsignment: jest.fn(),
+            loadShippingOptions: jest.fn(async () => undefined),
+            selectConsignmentShippingOption,
+            getState: () => ({
+                data: {
+                    getConsignments: () => stateConsignments,
+                    getCheckout: () => ({ taxTotal: 0 }),
+                },
+            }),
+        };
+        checkoutData = {
+            cart: { lineItems: { physicalItems: [{ id: 'item-1', quantity: 1 }], digitalItems: [] } },
+            consignments: [],
+            customer: { isGuest: false },
+        };
+
+        renderAt('top');
+
+        const result = await buttonProps.onShippingAddressChanged({
+            address1: '1 Main St',
+            city: 'Blue Ash',
+            countryCode: 'US',
+            zip: '45236',
+        });
+
+        expect(updateShippingAddress).toHaveBeenCalledWith(
+            expect.objectContaining({ address1: '1 Main St', postalCode: '45236' }),
+        );
+        expect(checkoutService.updateConsignment).not.toHaveBeenCalled();
+        expect(selectConsignmentShippingOption).toHaveBeenCalledWith('c-1', 'ship-1');
+        expect(result.consignments[0].selectedShippingOption).toEqual({ id: 'ship-1' });
+    });
+
     it('re-selects the Shop Pay delivery method after the address update clears it', async () => {
         const cart = {
             lineItems: { physicalItems: [{ id: 'item-1', quantity: 1 }], digitalItems: [] },

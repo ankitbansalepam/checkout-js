@@ -19,8 +19,8 @@ The backend URL must allow the checkout origin through CORS. Do not put Shopify,
 
 Checkout mounts the control twice, at the top (`placement="top"`, in `CheckoutHeader`) and in the payment methods (`placement="payment"`, in `PaymentForm`). Exactly one renders:
 
-- **Top**: when a billing address and a shipping method were already known when checkout loaded, e.g. a signed-in shopper with saved addresses, or a digital-only cart.
-- **Payment methods**: otherwise, including when the shopper enters shipping and billing during checkout.
+- **Top**: for signed-in shoppers, or when a billing address and a shipping method were already known when checkout loaded (e.g. a digital-only cart). If a signed-in shopper has no shipping address on the checkout yet, the Shop Pay address creates it.
+- **Payment methods**: otherwise, including when a guest enters shipping and billing during checkout.
 
 Readiness is recorded the first time a control renders for a cart, so completing the addresses mid-checkout doesn't move the button. Tests call `resetShopPayPlacement()` between cases.
 
