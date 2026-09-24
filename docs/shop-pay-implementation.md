@@ -71,7 +71,8 @@ The backend is a single Express app, `shop-pay-backend/server.js`.
    | Route | Called when | What it does |
    | --- | --- | --- |
    | `POST /shop-pay/session` | The popup asks for a session | Validates the cart, calls `shopPayPaymentRequestSessionCreate`, stores the session with a random confirmation token |
-   | `POST /shop-pay/submit` | The shopper presses Pay now | Merges the final shipping lines and totals, rejects the payment unless the total equals BigCommerce's checkout total, calls `shopPayPaymentRequestSessionSubmit` with an idempotency key, creates the BigCommerce order (linked to the signed-in customer, if any) |
+   | `POST /shop-pay/submit` | The shopper presses Pay now | Merges the final shipping lines and totals, rejects the payment unless the total equals BigCommerce's checkout total, calls `shopPayPaymentRequestSessionSubmit` with an idempotency key. This only starts payment processing; no order is created yet |
+   | `POST /shop-pay/complete` | Shop Pay reports the payment complete | Finds the Shopify order for the session (Admin API), checks it is paid and its total matches, then creates the BigCommerce order (linked to the signed-in customer, if any). Answers 202 while Shopify is still creating the order |
    | `GET /bigcommerce/orders/:id` | The confirmation page loads | Checks the confirmation token (valid for 15 minutes), returns the order, deletes the BigCommerce cart |
    | `POST /webhooks/shopify/orders` | Shopify creates an order | Verifies the HMAC and marks the BigCommerce order paid |
    | `GET /health` | Anytime | Liveness check |
@@ -105,8 +106,8 @@ The Shop Pay code lives in `packages/shop-pay-integration/src`.
    | `shippingaddresschanged` | Updates the BigCommerce shipping address, re-selects a shipping option, returns rebuilt totals |
    | `deliverymethodchanged` | Selects the same shipping option in BigCommerce, then rebuilds the shipping line and total |
    | `discountcodechanged` | Applies or removes BigCommerce coupons and reports invalid codes |
-   | `paymentconfirmationrequested` | Submits to the backend with one idempotency key per attempt |
-   | `paymentcomplete` | Waits for the submit result, closes the popup, opens the confirmation |
+   | `paymentconfirmationrequested` | Submits the payment to the backend with one idempotency key per attempt |
+   | `paymentcomplete` | Calls `/shop-pay/complete` (retrying while Shopify is still creating its order), then closes the popup and opens the confirmation |
    | `windowclosed` | Re-enables the button |
 
    The button stays disabled while a request is in progress, so a shopper can't start two sessions.

@@ -62,7 +62,8 @@ const { checkoutState } = useCheckout();
 - Use the cart selector only in `ShopPayCheckoutControl`; do not subscribe to the entire checkout state.
 - Keep the button disabled while a session request is in flight to prevent duplicate DIAL or Shopify requests.
 - Generate a unique `sourceIdentifier` for each new Shop Pay button attempt (`bc-{cartId}-{uuid}`); reuse the idempotency key only within that attempt.
-- The Shop Pay completion must wait for the backend submit result before navigating.
+- Create the BigCommerce order only after Shopify confirms payment: Pay now only submits (`/shop-pay/submit`); on `paymentcomplete`, checkout calls `/shop-pay/complete`, which creates the order once Shopify has a paid order for the session. Navigate only with the `bcOrderId` and `confirmationToken` it returns.
+- Create at most one backend session per click; Shop Pay can fire `sessionrequested` twice.
 - Card selection inside the Shop Pay popup is owned by Shopify (shop.app); checkout-js cannot preselect a card. If the popup shows "There was an issue with your selected payment method", the shopper must click the saved card before Pay now.
 - The requested confirmation URL is `/checkout/order-confirmation?orderId=...&shopPay=1&confirmationToken=...`.
 - Shop Pay confirmation uses `history.replaceState` plus `popstate` and renders `ShopPayOrderConfirmation` inside `CheckoutPage`; do not replace this with a full native BigCommerce confirmation navigation, because that route can 302 to cart for externally created orders.
