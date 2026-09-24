@@ -102,6 +102,46 @@ export function createShopPaySession(
     });
 }
 
+export interface ShopPayCompleteResult {
+    bcOrderId: number;
+    confirmationToken: string;
+}
+
+// Asks the backend to create the BigCommerce order once Shopify has a paid order for this
+// session. The backend answers 202 while Shopify is still creating the order.
+export async function completeShopPaySession(
+    sourceIdentifier: string,
+    {
+        backendUrl,
+        fetcher = fetch,
+        attempts = 6,
+        retryDelayMs = 2000,
+    }: { backendUrl: string; fetcher?: typeof fetch; attempts?: number; retryDelayMs?: number },
+): Promise<ShopPayCompleteResult> {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+        const response = await fetcher(`${backendUrl.replace(/\/$/, '')}/shop-pay/complete`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sourceIdentifier }),
+        });
+        const payload: unknown = await response.json();
+
+        if (response.status !== 202) {
+            if (!response.ok) {
+                throw new Error(getErrorMessage(payload, 'Unable to complete the Shop Pay order'));
+            }
+
+            return payload as ShopPayCompleteResult;
+        }
+
+        if (attempt < attempts) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
+        }
+    }
+
+    throw new Error('Shop Pay has not confirmed the payment yet. Please check your email before trying again.');
+}
+
 export function submitShopPaySession(
     sourceIdentifier: string,
     options: {

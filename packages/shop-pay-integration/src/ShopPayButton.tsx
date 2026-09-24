@@ -1,7 +1,12 @@
 import { type Cart, type Consignment, type Coupon } from '@bigcommerce/checkout-sdk';
 import React, { type FunctionComponent, useState } from 'react';
 
-import { createShopPaySession, submitShopPaySession, type ShopPaySubmitResult } from './shopPayClient';
+import {
+    completeShopPaySession,
+    createShopPaySession,
+    submitShopPaySession,
+    type ShopPaySubmitResult,
+} from './shopPayClient';
 import { getShopPayClientId, getShopPayShopId } from './shopPayConfig';
 import { buildShopPayPaymentRequest, createShopPaySdkSession } from './shopPaySdk';
 
@@ -68,10 +73,11 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                     latest.taxTotal,
                 );
             let backendSession: Awaited<ReturnType<typeof createShopPaySession>>;
+            // One backend session per attempt: Shop Pay can ask twice, and a second Shopify
+            // session would leave the popup paying one while the backend submits the other.
+            let backendSessionRequest: ReturnType<typeof createShopPaySession> | undefined;
             const sourceIdentifier = `bc-${cart.id}-${crypto.randomUUID()}`;
             let submitIdempotencyKey: string | undefined;
-            let submittedBigCommerceOrderId: number | undefined;
-            let confirmationToken: string | undefined;
             let resolveSubmit: (result: ShopPaySubmitResult) => void;
             let rejectSubmit: (reason?: unknown) => void;
             const submitCompleted = new Promise<ShopPaySubmitResult>((resolve, reject) => {
@@ -81,13 +87,14 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
 
             sdkSession.addEventListener('sessionrequested', async () => {
                 try {
-                    backendSession = await createShopPaySession(cart, {
+                    backendSessionRequest ??= createShopPaySession(cart, {
                         backendUrl,
                         bcOrderId,
                         coupons,
                         sourceIdentifier,
                         taxTotal,
                     });
+                    backendSession = await backendSessionRequest;
                     sdkSession.completeSessionRequest({
                         token: backendSession.token,
                         checkoutUrl: backendSession.checkoutUrl,
@@ -118,8 +125,6 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                         paymentRequest: sdkSession.paymentRequest,
                         billingAddress: event.billingAddress as Record<string, unknown>,
                     });
-                    submittedBigCommerceOrderId = submitResult.bcOrderId;
-                    confirmationToken = submitResult.confirmationToken;
                     resolveSubmit(submitResult);
                     sdkSession.completePaymentConfirmationRequest();
                 } catch (error) {
@@ -234,15 +239,21 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                     return;
                 }
 
-                if (!submittedBigCommerceOrderId || !confirmationToken) {
-                    onError?.(new Error('Shop Pay completed without confirmation details.'));
+                let completion: Awaited<ReturnType<typeof completeShopPaySession>>;
+
+                try {
+                    // The backend creates the BigCommerce order only once Shopify has a paid
+                    // order for this session.
+                    completion = await completeShopPaySession(sourceIdentifier, { backendUrl });
+                } catch (error) {
+                    onError?.(error instanceof Error ? error : new Error(String(error)));
                     setIsLoading(false);
                     return;
                 }
 
                 setIsLoading(false);
                 sdkSession.close();
-                onPaymentComplete?.(submittedBigCommerceOrderId, confirmationToken);
+                onPaymentComplete?.(completion.bcOrderId, completion.confirmationToken);
             });
 
             sdkSession.addEventListener('windowclosed', () => setIsLoading(false));
