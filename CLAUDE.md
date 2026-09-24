@@ -56,8 +56,8 @@ const { checkoutState } = useCheckout();
 
 ## Shop Pay token budget
 
-- Keep the Shop Pay control out of checkout-js core and hosted checkout. Only a custom checkout app may import and render it.
-- Keep the custom checkout backend URL opt-in through `window.shopPayBackendUrl`.
+- This checkout-js build is the store's custom checkout, and core renders the Shop Pay control in two places: `CheckoutHeader` (`placement="top"`) and `PaymentForm` (`placement="payment"`). Both render only when `getShopPayBackendUrl()` returns a URL.
+- The backend URL defaults to `https://shop-pay-backend.vercel.app` in `shopPayConfig.ts`; `window.shopPayBackendUrl` overrides it. Keep all Shop Pay logic in `packages/shop-pay-integration`; core only mounts the control and the confirmation.
 - Create a session only from the button click; never create sessions during render, mount, or checkout state updates.
 - Use the cart selector only in `ShopPayCheckoutControl`; do not subscribe to the entire checkout state.
 - Keep the button disabled while a session request is in flight to prevent duplicate DIAL or Shopify requests.
