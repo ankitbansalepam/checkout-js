@@ -1,6 +1,6 @@
 const CircularDependencyPlugin = require('circular-dependency-plugin');
 const EventEmitter = require('events');
-const { copyFileSync, existsSync } = require('fs');
+const { copyFileSync } = require('fs');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { join } = require('path');
 const SpeedMeasurePlugin = require('speed-measure-webpack-plugin');
@@ -299,15 +299,6 @@ function loaderConfig(options, argv) {
     const isProduction = mode !== 'development';
 
     return (isProduction ? getNextVersion() : Promise.resolve('dev')).then((appVersion) => {
-        const appManifestPath = join(
-            __dirname,
-            isProduction ? 'dist' : 'build',
-            `manifest-app-${appVersion}.json`,
-        );
-        const loaderManifest = existsSync(appManifestPath)
-            ? transformLoaderManifest(appManifestPath, PRELOAD_ASSETS)
-            : { appVersion, css: [], dynamicChunks: { css: [], js: [] }, js: [], integrity: {} };
-
         return {
             entry: {
                 [LOADER_ENTRY_NAME]: join(__dirname, 'packages', 'core', 'src', 'app', 'loader.ts'),
@@ -341,10 +332,6 @@ function loaderConfig(options, argv) {
                 publicPath: '/',
             },
             plugins: [
-                new DefinePlugin({
-                    LIBRARY_NAME: JSON.stringify(LIBRARY_NAME),
-                    MANIFEST_JSON: JSON.stringify(loaderManifest),
-                }),
                 new SubresourceIntegrityPlugin({
                     hashFuncNames: ['sha256'],
                     enabled: isProduction,
