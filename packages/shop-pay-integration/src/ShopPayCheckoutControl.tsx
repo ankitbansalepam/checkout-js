@@ -66,7 +66,10 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         };
     };
 
-    const onShippingAddressChanged = async (address: Record<string, unknown>) => {
+    const onShippingAddressChanged = async (
+        address: Record<string, unknown>,
+        preferredShippingOptionId?: string,
+    ) => {
         const firstName = String(address.firstName || address.givenName || '');
         const lastName = String(address.lastName || address.familyName || '');
         const address1 = String(address.address1 || address.addressLine1 || '');
@@ -111,6 +114,28 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         );
 
         await checkoutService.loadShippingOptions();
+
+        // Changing the address clears BigCommerce's selected shipping option. Re-select one so
+        // the payment request keeps a shipping line; otherwise its total no longer matches the
+        // delivery method shown in Shop Pay and Shopify declines the payment.
+        await Promise.all(
+            (checkoutService.getState().data.getConsignments() || []).map((consignment) => {
+                const options = consignment.availableShippingOptions || [];
+                const previousOptionId = consignments.find(({ id }) => id === consignment.id)
+                    ?.selectedShippingOption?.id;
+                const option =
+                    options.find(({ id }) => id === preferredShippingOptionId) ||
+                    options.find(({ id }) => id === previousOptionId) ||
+                    options.find(({ isRecommended }) => isRecommended) ||
+                    options[0];
+
+                if (!option || consignment.selectedShippingOption?.id === option.id) {
+                    return undefined;
+                }
+
+                return checkoutService.selectConsignmentShippingOption(consignment.id, option.id);
+            }),
+        );
 
         const updatedConsignments = checkoutService.getState().data.getConsignments() || [];
         const hasPhysicalItems = cart.lineItems.physicalItems.length > 0;

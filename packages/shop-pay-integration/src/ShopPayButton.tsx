@@ -12,7 +12,10 @@ export interface ShopPayButtonProps {
     onPaymentComplete?(orderId?: number, confirmationToken?: string): void;
     consignments?: Consignment[];
     coupons?: Coupon[];
-    onShippingAddressChanged?(address: Record<string, unknown>): Promise<{
+    onShippingAddressChanged?(
+        address: Record<string, unknown>,
+        preferredShippingOptionId?: string,
+    ): Promise<{
         consignments: Consignment[];
         taxTotal: number;
     }>;
@@ -129,8 +132,13 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 }
 
                 try {
+                    const [selectedShippingLine] = (sdkSession.paymentRequest?.shippingLines ||
+                        []) as Array<{ code?: string }>;
                     const { consignments: updatedConsignments, taxTotal: updatedTaxTotal } =
-                        await onShippingAddressChanged(event.shippingAddress);
+                        await onShippingAddressChanged(
+                            event.shippingAddress,
+                            selectedShippingLine?.code,
+                        );
                     sdkSession.completeShippingAddressChange({
                         updatedPaymentRequest: buildShopPayPaymentRequest(
                             cart,
