@@ -10,6 +10,12 @@ export type ShopPayCheckoutControlProps = Omit<ShopPayButtonProps, 'cart'> & {
     placement: 'top' | 'payment';
 };
 
+// Checkout readiness recorded the first time a control renders for a cart. Both
+// placements read it, so they agree on where the single Shop Pay button goes.
+const initialReadinessByCartId = new Map<string, boolean>();
+
+export const resetShopPayPlacement = () => initialReadinessByCartId.clear();
+
 export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlProps> = ({
     placement,
     ...props
@@ -29,14 +35,21 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         return null;
     }
 
-    // Show at the top only once shipping and billing are known (e.g. a signed-in
-    // shopper with saved addresses), so Shop Pay gets real delivery options and totals.
+    // Show at the top only when shipping and billing were already known when checkout
+    // loaded (e.g. a signed-in shopper with saved addresses). A shopper who fills them in
+    // during checkout keeps Shop Pay in the payment methods, so the button doesn't jump to
+    // the top once their addresses are complete.
     const hasBillingAddress = Boolean(billingAddress?.address1 && billingAddress.countryCode);
     const hasSelectedShipping =
         cart.lineItems.physicalItems.length === 0 ||
         (consignments.length > 0 &&
             consignments.every((consignment) => consignment.selectedShippingOption));
-    const isReadyForTop = hasBillingAddress && hasSelectedShipping;
+
+    if (!initialReadinessByCartId.has(cart.id)) {
+        initialReadinessByCartId.set(cart.id, hasBillingAddress && hasSelectedShipping);
+    }
+
+    const isReadyForTop = initialReadinessByCartId.get(cart.id);
 
     if ((placement === 'top') !== isReadyForTop) {
         return null;

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
 
-import { ShopPayCheckoutControl } from './ShopPayCheckoutControl';
+import { resetShopPayPlacement, ShopPayCheckoutControl } from './ShopPayCheckoutControl';
 
 let checkoutData: Record<string, unknown>;
 let checkoutService: Record<string, unknown>;
@@ -41,6 +41,7 @@ const renderAt = (placement: 'top' | 'payment') =>
 
 beforeEach(() => {
     checkoutService = {};
+    resetShopPayPlacement();
 });
 
 describe('ShopPayCheckoutControl placement', () => {
@@ -82,6 +83,25 @@ describe('ShopPayCheckoutControl placement', () => {
 
         renderAt('payment');
         expect(screen.getAllByText('Shop Pay')).toHaveLength(1);
+    });
+});
+
+describe('ShopPayCheckoutControl placement when addresses are filled in during checkout', () => {
+    it('stays in the payment step after shipping and billing are completed', () => {
+        checkoutData = { billingAddress: undefined, cart: physicalCart, consignments: [unshippedConsignment] };
+
+        const { unmount } = renderAt('top');
+
+        expect(screen.queryByText('Shop Pay')).not.toBeInTheDocument();
+        unmount();
+
+        checkoutData = { billingAddress, cart: physicalCart, consignments: [shippedConsignment] };
+
+        renderAt('top');
+        expect(screen.queryByText('Shop Pay')).not.toBeInTheDocument();
+
+        renderAt('payment');
+        expect(screen.getByText('Shop Pay')).toBeInTheDocument();
     });
 });
 
