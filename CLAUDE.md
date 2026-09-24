@@ -63,17 +63,20 @@ const { checkoutState } = useCheckout();
 - Keep the button disabled while a session request is in flight to prevent duplicate DIAL or Shopify requests.
 - Generate a unique `sourceIdentifier` for each new Shop Pay button attempt (`bc-{cartId}-{uuid}`); reuse the idempotency key only within that attempt.
 - The Shop Pay completion must wait for the backend submit result before navigating.
+- Card selection inside the Shop Pay popup is owned by Shopify (shop.app); checkout-js cannot preselect a card. If the popup shows "There was an issue with your selected payment method", the shopper must click the saved card before Pay now.
 - The requested confirmation URL is `/checkout/order-confirmation?orderId=...&shopPay=1&confirmationToken=...`.
 - Shop Pay confirmation uses `history.replaceState` plus `popstate` and renders `ShopPayOrderConfirmation` inside `CheckoutPage`; do not replace this with a full native BigCommerce confirmation navigation, because that route can 302 to cart for externally created orders.
-- The development bundle is served from `build` on port 8081 and exposed through the current checkout ngrok tunnel. Run `npx webpack --mode development` after source changes, then serve with `npx http-server build --cors -c-1 -p 8081`.
+- Exactly one Shop Pay button renders (`placement` prop): at the top only when billing and shipping were already known when checkout loaded (e.g. a signed-in shopper with saved addresses); otherwise in the payment methods. Readiness is recorded once per cart, so addresses entered during checkout never move the button to the top.
+- After a Shop Pay shipping address change, re-select a BigCommerce shipping option (Shop Pay's choice, then the previous one, then recommended/first). Updating the consignment address clears the selected option; a payment request without a shipping line no longer matches the delivery method shown in Shop Pay and Shopify declines the payment.
 - The production build command is `npx nx run core:build --skip-nx-cache`.
-- Validate only the changed package first with `npx jest packages/shop-pay-integration/src/shopPayClient.test.ts packages/utility/src/navigateToOrderConfirmation.test.ts --runInBand` and targeted type/build checks.
+- Validate only the changed package first with `npx jest packages/shop-pay-integration/src packages/utility/src/navigateToOrderConfirmation.test.ts --runInBand` and targeted type/build checks.
 
 ## Shop Pay runtime context
 
 - Primary backend project: `C:\Project\shop-pay-backend`.
 - Primary storefront project: `C:\Project\Cornorstone\Cornerstone-6.21.0`.
 - Do not use `C:\Project\repo-install-check` for active builds or runtime.
-- Current development loader: `https://d8ff-49-36-241-63.ngrok-free.app/auto-loader-dev.js`.
-- Current backend URL in `shopPayConfig.ts`: `https://e1bd-2405-201-5c36-70b1-38bb-431c-cab1-41c4.ngrok-free.app`.
-- Ngrok URLs rotate. When the backend tunnel changes, update `shopPayConfig.ts` and backend `.env` CORS, rebuild, and verify the public bundle before testing.
+- Storefront: `https://shoppaystore.mybigcommerce.com` (store hash `ocqei08gqj`). Shopify store: `mynewstore-9969.myshopify.com` (Shopify Payments in test mode).
+- Checkout loader: `https://checkout-js-weld.vercel.app/auto-loader.js`. A push to `master` auto-deploys it to Vercel production (team `shop-pay`, project `checkout-js`); `vercel ls checkout-js` shows status.
+- Backend: `https://shop-pay-backend.vercel.app`, the default in `shopPayConfig.ts` (`window.shopPayBackendUrl` overrides it). Deployed with `vercel --prod` from the backend folder, not from git.
+- To confirm a deploy contains a change, fetch `auto-loader.js`, then grep the `checkout-*.js` chunk it lists for a distinctive identifier.
