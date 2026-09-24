@@ -4,13 +4,21 @@ import { useCheckout } from '@bigcommerce/checkout/contexts';
 
 import { ShopPayButton, type ShopPayButtonProps } from './ShopPayButton';
 
-export type ShopPayCheckoutControlProps = Omit<ShopPayButtonProps, 'cart'>;
+export type ShopPayCheckoutControlProps = Omit<ShopPayButtonProps, 'cart'> & {
+    // The same control is mounted at the top of checkout and in the payment step;
+    // exactly one of them renders so the shopper never sees two Shop Pay buttons.
+    placement: 'top' | 'payment';
+};
 
-export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlProps> = (props) => {
+export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlProps> = ({
+    placement,
+    ...props
+}) => {
     const { checkoutService } = useCheckout(() => undefined);
     const {
-        selectedState: { cart, checkout, consignments, coupons },
+        selectedState: { billingAddress, cart, checkout, consignments, coupons },
     } = useCheckout(({ data }) => ({
+        billingAddress: data.getBillingAddress(),
         cart: data.getCart(),
         checkout: data.getCheckout(),
         consignments: data.getConsignments() || [],
@@ -18,6 +26,19 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
     }));
 
     if (!cart) {
+        return null;
+    }
+
+    // Show at the top only once shipping and billing are known (e.g. a signed-in
+    // shopper with saved addresses), so Shop Pay gets real delivery options and totals.
+    const hasBillingAddress = Boolean(billingAddress?.address1 && billingAddress.countryCode);
+    const hasSelectedShipping =
+        cart.lineItems.physicalItems.length === 0 ||
+        (consignments.length > 0 &&
+            consignments.every((consignment) => consignment.selectedShippingOption));
+    const isReadyForTop = hasBillingAddress && hasSelectedShipping;
+
+    if ((placement === 'top') !== isReadyForTop) {
         return null;
     }
 

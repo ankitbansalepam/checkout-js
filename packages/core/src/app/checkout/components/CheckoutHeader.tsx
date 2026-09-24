@@ -56,7 +56,7 @@ export const CheckoutHeader: React.FC<CheckoutHeaderProps> = ({
             <BackorderQuantitiesChangedBanner message={flashMessages?.[0]?.message} />
             <LoadingNotification isLoading={extensionState.isShowingLoadingIndicator} />
             <PromotionBannerList promotions={promotions} />
-            {shopPayBackendUrl && !isPaymentStepActive && (
+            {shopPayBackendUrl && (
                 <div className="shopPayCheckoutControl shopPayCheckoutControl--top">
                     <ShopPayCheckoutControl
                         backendUrl={shopPayBackendUrl}
@@ -64,6 +64,7 @@ export const CheckoutHeader: React.FC<CheckoutHeaderProps> = ({
                         label="Checkout with Shop Pay"
                         onError={onUnhandledError}
                         onPaymentComplete={navigateToShopPayOrderConfirmation}
+                        placement="top"
                     />
                 </div>
             )}

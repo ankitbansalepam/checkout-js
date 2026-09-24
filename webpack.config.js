@@ -196,6 +196,10 @@ function appConfig(options, argv) {
                             {
                                 loader: 'ts-loader',
                                 options: {
+                                    // Pin the config: otherwise ts-loader takes the tsconfig of the
+                                    // first file it compiles, which with a warm webpack cache can be
+                                    // a non-core package that lacks core's global type declarations.
+                                    configFile: join(__dirname, 'packages', 'core', 'tsconfig.json'),
                                     onlyCompileBundledFiles: true,
                                     // transpileOnly: true,
                                 },

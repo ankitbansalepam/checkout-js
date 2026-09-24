@@ -262,8 +262,9 @@ const PaymentForm: FunctionComponent<
                     <ShopPayCheckoutControl
                         backendUrl={shopPayBackendUrl}
                         bcOrderId={bcOrderId}
-                        onPaymentComplete={onShopPayPaymentComplete}
                         onError={onUnhandledError}
+                        onPaymentComplete={onShopPayPaymentComplete}
+                        placement="payment"
                     />
                 </div>
             )}
