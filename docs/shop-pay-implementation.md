@@ -71,7 +71,7 @@ The backend is a single Express app, `shop-pay-backend/server.js`.
    | Route | Called when | What it does |
    | --- | --- | --- |
    | `POST /shop-pay/session` | The popup asks for a session | Validates the cart, calls `shopPayPaymentRequestSessionCreate`, stores the session with a random confirmation token |
-   | `POST /shop-pay/submit` | The shopper presses Pay now | Merges the final shipping lines and totals, calls `shopPayPaymentRequestSessionSubmit` with an idempotency key, creates the BigCommerce order (linked to the signed-in customer, if any) |
+   | `POST /shop-pay/submit` | The shopper presses Pay now | Merges the final shipping lines and totals, rejects the payment unless the total equals BigCommerce's checkout total, calls `shopPayPaymentRequestSessionSubmit` with an idempotency key, creates the BigCommerce order (linked to the signed-in customer, if any) |
    | `GET /bigcommerce/orders/:id` | The confirmation page loads | Checks the confirmation token (valid for 15 minutes), returns the order, deletes the BigCommerce cart |
    | `POST /webhooks/shopify/orders` | Shopify creates an order | Verifies the HMAC and marks the BigCommerce order paid |
    | `GET /health` | Anytime | Liveness check |
@@ -103,7 +103,7 @@ The Shop Pay code lives in `packages/shop-pay-integration/src`.
    | --- | --- |
    | `sessionrequested` | Creates the backend session with a new `sourceIdentifier` (`bc-{cartId}-{uuid}`) and returns its token |
    | `shippingaddresschanged` | Updates the BigCommerce shipping address, re-selects a shipping option, returns rebuilt totals |
-   | `deliverymethodchanged` | Rebuilds the shipping line and total for the method chosen in the popup |
+   | `deliverymethodchanged` | Selects the same shipping option in BigCommerce, then rebuilds the shipping line and total |
    | `discountcodechanged` | Applies or removes BigCommerce coupons and reports invalid codes |
    | `paymentconfirmationrequested` | Submits to the backend with one idempotency key per attempt |
    | `paymentcomplete` | Waits for the submit result, closes the popup, opens the confirmation |

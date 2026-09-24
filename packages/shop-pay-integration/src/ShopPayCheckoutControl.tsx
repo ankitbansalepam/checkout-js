@@ -75,7 +75,34 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
 
         return {
             cart: state.getCart() || cart,
+            consignments: state.getConsignments() || [],
             coupons: state.getCoupons() || [],
+            taxTotal: state.getCheckout()?.taxTotal || 0,
+        };
+    };
+
+    const onDeliveryMethodChanged = async (shippingOptionId: string) => {
+        const currentConsignments = checkoutService.getState().data.getConsignments() || [];
+
+        await Promise.all(
+            currentConsignments
+                .filter(
+                    (consignment) =>
+                        consignment.selectedShippingOption?.id !== shippingOptionId &&
+                        (consignment.availableShippingOptions || []).some(
+                            ({ id }) => id === shippingOptionId,
+                        ),
+                )
+                .map((consignment) =>
+                    checkoutService.selectConsignmentShippingOption(consignment.id, shippingOptionId),
+                ),
+        );
+
+        const state = checkoutService.getState().data;
+
+        return {
+            cart: state.getCart() || cart,
+            consignments: state.getConsignments() || [],
             taxTotal: state.getCheckout()?.taxTotal || 0,
         };
     };
@@ -170,6 +197,7 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         }
 
         return {
+            cart: checkoutService.getState().data.getCart() || cart,
             consignments: updatedConsignments,
             taxTotal: checkoutService.getState().data.getCheckout()?.taxTotal || 0,
         };
@@ -182,6 +210,7 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
             taxTotal={checkout?.taxTotal || 0}
             consignments={consignments}
             coupons={coupons}
+            onDeliveryMethodChanged={onDeliveryMethodChanged}
             onShippingAddressChanged={onShippingAddressChanged}
             onDiscountCodesChanged={onDiscountCodesChanged}
         />

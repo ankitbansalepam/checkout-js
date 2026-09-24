@@ -123,6 +123,40 @@ describe('ShopPayCheckoutControl placement for signed-in shoppers', () => {
     });
 });
 
+describe('ShopPayCheckoutControl delivery method change', () => {
+    it('selects the Shop Pay delivery method in BigCommerce', async () => {
+        const options = [{ id: 'ship-1' }, { id: 'ship-2' }];
+        let stateConsignments: Array<Record<string, unknown>> = [
+            { id: 'c-1', availableShippingOptions: options, selectedShippingOption: { id: 'ship-1' } },
+        ];
+        const selectConsignmentShippingOption = jest.fn(async (id: string, optionId: string) => {
+            stateConsignments = [
+                { id, availableShippingOptions: options, selectedShippingOption: { id: optionId } },
+            ];
+        });
+
+        checkoutService = {
+            selectConsignmentShippingOption,
+            getState: () => ({
+                data: {
+                    getConsignments: () => stateConsignments,
+                    getCart: () => undefined,
+                    getCheckout: () => ({ taxTotal: 0 }),
+                },
+            }),
+        };
+        checkoutData = { billingAddress, cart: physicalCart, consignments: stateConsignments };
+
+        renderAt('top');
+
+        const result = await buttonProps.onDeliveryMethodChanged('ship-2');
+
+        expect(selectConsignmentShippingOption).toHaveBeenCalledWith('c-1', 'ship-2');
+        expect(result.consignments[0].selectedShippingOption).toEqual({ id: 'ship-2' });
+        expect(result.cart).toBe(physicalCart);
+    });
+});
+
 describe('ShopPayCheckoutControl shipping address change', () => {
     it('creates a consignment from the Shop Pay address when checkout has none', async () => {
         const options = [{ id: 'ship-1', isRecommended: true }];
@@ -144,6 +178,7 @@ describe('ShopPayCheckoutControl shipping address change', () => {
             getState: () => ({
                 data: {
                     getConsignments: () => stateConsignments,
+                    getCart: () => undefined,
                     getCheckout: () => ({ taxTotal: 0 }),
                 },
             }),
@@ -195,6 +230,7 @@ describe('ShopPayCheckoutControl shipping address change', () => {
             getState: () => ({
                 data: {
                     getConsignments: () => stateConsignments,
+                    getCart: () => undefined,
                     getCheckout: () => ({ taxTotal: 0 }),
                 },
             }),

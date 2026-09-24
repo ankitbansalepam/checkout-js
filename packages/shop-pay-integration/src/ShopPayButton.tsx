@@ -5,6 +5,13 @@ import { createShopPaySession, submitShopPaySession, type ShopPaySubmitResult } 
 import { getShopPayClientId, getShopPayShopId } from './shopPayConfig';
 import { buildShopPayPaymentRequest, createShopPaySdkSession } from './shopPaySdk';
 
+// The BigCommerce checkout after a change made in the Shop Pay popup.
+export interface ShopPayCheckoutUpdate {
+    cart: Cart;
+    consignments: Consignment[];
+    taxTotal: number;
+}
+
 export interface ShopPayButtonProps {
     cart: Cart;
     taxTotal?: number;
@@ -15,15 +22,9 @@ export interface ShopPayButtonProps {
     onShippingAddressChanged?(
         address: Record<string, unknown>,
         preferredShippingOptionId?: string,
-    ): Promise<{
-        consignments: Consignment[];
-        taxTotal: number;
-    }>;
-    onDiscountCodesChanged?(codes: string[]): Promise<{
-        cart: Cart;
-        coupons: Coupon[];
-        taxTotal: number;
-    }>;
+    ): Promise<ShopPayCheckoutUpdate>;
+    onDeliveryMethodChanged?(shippingOptionId: string): Promise<ShopPayCheckoutUpdate>;
+    onDiscountCodesChanged?(codes: string[]): Promise<ShopPayCheckoutUpdate & { coupons: Coupon[] }>;
     backendUrl: string;
     label?: string;
     onError?(error: Error): void;
@@ -37,6 +38,7 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
     consignments,
     coupons,
     onShippingAddressChanged,
+    onDeliveryMethodChanged,
     onDiscountCodesChanged,
     backendUrl,
     label = 'Buy with Shop Pay',
@@ -55,6 +57,16 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 coupons,
                 taxTotal,
             });
+            // Latest BigCommerce checkout state; every payment request is rebuilt from it so the
+            // Shop Pay total always matches the BigCommerce checkout total the backend verifies.
+            const latest = { cart, consignments, coupons: coupons || [], taxTotal };
+            const buildLatestPaymentRequest = () =>
+                buildShopPayPaymentRequest(
+                    latest.cart,
+                    latest.consignments,
+                    latest.coupons,
+                    latest.taxTotal,
+                );
             let backendSession: Awaited<ReturnType<typeof createShopPaySession>>;
             const sourceIdentifier = `bc-${cart.id}-${crypto.randomUUID()}`;
             let submitIdempotencyKey: string | undefined;
@@ -80,12 +92,7 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                         token: backendSession.token,
                         checkoutUrl: backendSession.checkoutUrl,
                         sourceIdentifier: backendSession.sourceIdentifier,
-                        updatedPaymentRequest: buildShopPayPaymentRequest(
-                            cart,
-                            consignments,
-                            coupons,
-                            taxTotal,
-                        ),
+                        updatedPaymentRequest: buildLatestPaymentRequest(),
                     });
                 } catch (error) {
                     sdkSession.completeSessionRequest({
@@ -134,18 +141,15 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 try {
                     const [selectedShippingLine] = (sdkSession.paymentRequest?.shippingLines ||
                         []) as Array<{ code?: string }>;
-                    const { consignments: updatedConsignments, taxTotal: updatedTaxTotal } =
+                    Object.assign(
+                        latest,
                         await onShippingAddressChanged(
                             event.shippingAddress,
                             selectedShippingLine?.code,
-                        );
-                    sdkSession.completeShippingAddressChange({
-                        updatedPaymentRequest: buildShopPayPaymentRequest(
-                            cart,
-                            updatedConsignments,
-                            coupons,
-                            updatedTaxTotal,
                         ),
+                    );
+                    sdkSession.completeShippingAddressChange({
+                        updatedPaymentRequest: buildLatestPaymentRequest(),
                     });
                 } catch (error) {
                     sdkSession.completeShippingAddressChange({
@@ -173,22 +177,13 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 const enteredCodes = event.discountCodes || [];
 
                 try {
-                    const {
-                        cart: updatedCart,
-                        coupons: updatedCoupons,
-                        taxTotal: updatedTaxTotal,
-                    } =
-                        await onDiscountCodesChanged(enteredCodes);
-                    const acceptedCodes = updatedCoupons.map((coupon) => coupon.code);
+                    Object.assign(latest, await onDiscountCodesChanged(enteredCodes));
+
+                    const acceptedCodes = latest.coupons.map((coupon) => coupon.code);
                     const rejectedCodes = enteredCodes.filter((code) => !acceptedCodes.includes(code));
 
                     sdkSession.completeDiscountCodeChange({
-                        updatedPaymentRequest: buildShopPayPaymentRequest(
-                            updatedCart,
-                            consignments,
-                            updatedCoupons,
-                            updatedTaxTotal,
-                        ),
+                        updatedPaymentRequest: buildLatestPaymentRequest(),
                         ...(rejectedCodes.length
                             ? {
                                   errors: [
@@ -207,39 +202,22 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 }
             });
 
-            sdkSession.addEventListener('deliverymethodchanged', (event) => {
-                const currentPaymentRequest = sdkSession.paymentRequest || {};
+            sdkSession.addEventListener('deliverymethodchanged', async (event) => {
                 const deliveryMethod = event.deliveryMethod;
 
-                if (!deliveryMethod) {
+                if (!deliveryMethod || !onDeliveryMethodChanged) {
                     sdkSession.completeDeliveryMethodChange({
-                        updatedPaymentRequest: {
-                            ...currentPaymentRequest,
-                            shippingLines: [],
-                            totalShippingPrice: undefined,
-                            total: { amount: cart.cartAmount, currencyCode: cart.currency.code },
-                        },
+                        errors: [{ type: 'generalError', message: 'Delivery methods are unavailable.' }],
                     });
                     return;
                 }
 
                 try {
+                    // Select the same option in BigCommerce so its checkout total and the
+                    // order's shipping match what the shopper chose in Shop Pay.
+                    Object.assign(latest, await onDeliveryMethodChanged(deliveryMethod.code));
                     sdkSession.completeDeliveryMethodChange({
-                        updatedPaymentRequest: {
-                            ...currentPaymentRequest,
-                            shippingLines: [
-                                {
-                                    label: deliveryMethod.label,
-                                    code: deliveryMethod.code,
-                                    amount: deliveryMethod.amount,
-                                },
-                            ],
-                            totalShippingPrice: { finalTotal: deliveryMethod.amount },
-                            total: {
-                                amount: cart.cartAmount + deliveryMethod.amount.amount,
-                                currencyCode: deliveryMethod.amount.currencyCode,
-                            },
-                        },
+                        updatedPaymentRequest: buildLatestPaymentRequest(),
                     });
                 } catch (error) {
                     sdkSession.completeDeliveryMethodChange({
