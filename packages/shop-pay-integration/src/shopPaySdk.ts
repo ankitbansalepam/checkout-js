@@ -79,8 +79,14 @@ export function loadShopPaySdk(): Promise<ShopPayGlobal> {
     return sdkLoad;
 }
 
+// BigCommerce amounts can carry fractions of a cent (e.g. tax of 38.445); round half up to
+// cents like BigCommerce's own totals. toFixed(6) clears float noise such as 4944.4999999.
+export function roundMoney(amount: number): number {
+    return Math.round(Number((amount * 100).toFixed(6))) / 100;
+}
+
 function toMoney(amount: number, currencyCode: string) {
-    return { amount, currencyCode };
+    return { amount: roundMoney(amount), currencyCode };
 }
 
 export function buildShopPayPaymentRequest(
@@ -93,7 +99,8 @@ export function buildShopPayPaymentRequest(
     const items = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
     const selectedShippingOptions = consignments
         .map((consignment) => consignment.selectedShippingOption)
-        .filter((option): option is NonNullable<typeof option> => option !== undefined);
+        // BigCommerce uses null when a consignment has no shipping option selected yet.
+        .filter((option): option is NonNullable<typeof option> => option != null);
     const shippingAmount = selectedShippingOptions.reduce((total, option) => total + option.cost, 0);
     const deliveryMethods = consignments.flatMap((consignment) =>
         (consignment.availableShippingOptions || []).map((option) => ({
