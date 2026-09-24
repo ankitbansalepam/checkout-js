@@ -88,7 +88,7 @@ The backend is a single Express app, `shop-pay-backend/server.js`.
    ```
    The preflight must return `204`. For another storefront domain, add it to `ALLOWED_ORIGIN` in Vercel and run `vercel redeploy`.
 
-Sessions are saved to a JSON file: `data/shop-pay-sessions.json` locally, or `/tmp/shop-pay-sessions.json` on Vercel. Vercel's `/tmp` isn't shared between instances, so use managed storage such as Upstash Redis before production.
+Sessions are stored in Upstash Redis (`upstash-kv-cobalt-drawer`, iad1, connected via Vercel Marketplace; env `KV_REST_API_URL`/`KV_REST_API_TOKEN`), keyed `shop-pay:session:{sourceIdentifier}` plus `shop-pay:order:{bcOrderId}`, 7-day TTL. Without those env vars `sessionStore.js` falls back to a JSON file (`SESSION_STORE_PATH`), which suits only a single local process. The startup log says which store is in use.
 
 ## Part 4: Build the checkout-js package
 
