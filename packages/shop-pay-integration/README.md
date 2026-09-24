@@ -42,4 +42,4 @@ Readiness is recorded the first time a control renders for a cart, so completing
 npx jest packages/shop-pay-integration/src --runInBand
 ```
 
-See `shop-pay-backend/INTEGRATION_GUIDE.md` for the end-to-end flow, deployment, and troubleshooting.
+See [docs/shop-pay-implementation.md](../../docs/shop-pay-implementation.md) for a step-by-step setup guide, and `shop-pay-backend/INTEGRATION_GUIDE.md` for backend details.
