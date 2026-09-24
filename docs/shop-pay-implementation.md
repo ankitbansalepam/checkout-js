@@ -1,6 +1,6 @@
 # Shop Pay implementation: step by step
 
-This guide walks through how Shop Pay was added to the BigCommerce custom checkout, in the order you would build or rebuild it. For the backend route details and the history of issues found along the way, see `shop-pay-backend/INTEGRATION_GUIDE.md`.
+This guide walks through how Shop Pay was added to the BigCommerce custom checkout, in the order you would build or rebuild it. For the backend route details and the history of issues found along the way, see `shop-pay-backend/INTEGRATION_GUIDE.md`. For diagrams of each flow, see [shop-pay-flow-diagrams.md](shop-pay-flow-diagrams.md).
 
 ## How it fits together
 
@@ -75,6 +75,7 @@ The backend is a single Express app, `shop-pay-backend/server.js`.
    | `POST /shop-pay/complete` | Shop Pay reports the payment complete | Finds the Shopify order for the session (Admin API), checks it is paid and its total matches, then creates the BigCommerce order (linked to the signed-in customer, if any). Answers 202 while Shopify is still creating the order |
    | `GET /bigcommerce/orders/:id` | The confirmation page loads | Checks the confirmation token (valid for 15 minutes), returns the order, deletes the BigCommerce cart |
    | `POST /webhooks/shopify/orders` | Shopify creates an order | Verifies the HMAC and marks the BigCommerce order paid |
+   | `POST /delivery/options` | The shipping step and Shop Pay load | Says whether the cart needs scheduled (truck) delivery and which dates are available for the address (mock ATP); see diagram 7 in [shop-pay-flow-diagrams.md](shop-pay-flow-diagrams.md) |
    | `GET /health` | Anytime | Liveness check |
 
 3. **Deploy to Vercel.**
