@@ -1,4 +1,11 @@
-import { type Cart, type Consignment, type Coupon } from '@bigcommerce/checkout-sdk';
+import { type Cart, type Consignment, type Coupon, type ShippingOption } from '@bigcommerce/checkout-sdk';
+
+import {
+    filterShippingOptionsForCart,
+    formatDeliveryDate,
+    type ScheduledDeliveryAvailability,
+    type ScheduledDeliverySelection,
+} from './scheduledDelivery';
 
 interface ShopPayEvent {
     billingAddress?: unknown;
@@ -94,6 +101,10 @@ export function buildShopPayPaymentRequest(
     consignments: Consignment[] = [],
     coupons: Coupon[] = [],
     taxTotal = 0,
+    delivery: {
+        availability?: ScheduledDeliveryAvailability;
+        selection?: ScheduledDeliverySelection;
+    } = {},
 ): Record<string, unknown> {
     const currencyCode = cart.currency.code;
     const items = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
@@ -102,14 +113,34 @@ export function buildShopPayPaymentRequest(
         // BigCommerce uses null when a consignment has no shipping option selected yet.
         .filter((option): option is NonNullable<typeof option> => option != null);
     const shippingAmount = selectedShippingOptions.reduce((total, option) => total + option.cost, 0);
-    const deliveryMethods = consignments.flatMap((consignment) =>
-        (consignment.availableShippingOptions || []).map((option) => ({
-            label: option.description,
-            code: option.id,
-            amount: toMoney(option.cost, currencyCode),
-            ...(option.transitTime ? { detail: option.transitTime } : {}),
-        })),
-    );
+    // A scheduled delivery is chosen in the shipping step, so Shop Pay only shows that one
+    // service, labelled and dated with the chosen day. Shop Pay has no date picker.
+    const scheduledDate =
+        delivery.availability?.scheduled && delivery.selection?.date ? delivery.selection.date : undefined;
+    const describe = (option: ShippingOption) =>
+        scheduledDate
+            ? `${option.description} – ${formatDeliveryDate(scheduledDate)}`
+            : option.description;
+    const deliveryMethods = scheduledDate
+        ? selectedShippingOptions.map((option) => ({
+              label: describe(option),
+              code: option.id,
+              amount: toMoney(option.cost, currencyCode),
+              deliveryExpectationLabel: `Scheduled for ${formatDeliveryDate(scheduledDate)}`,
+              minDeliveryDate: `${scheduledDate}T00:00:00Z`,
+              maxDeliveryDate: `${scheduledDate}T23:59:59Z`,
+          }))
+        : consignments.flatMap((consignment) =>
+              filterShippingOptionsForCart(
+                  consignment.availableShippingOptions || [],
+                  delivery.availability,
+              ).map((option) => ({
+                  label: option.description,
+                  code: option.id,
+                  amount: toMoney(option.cost, currencyCode),
+                  ...(option.transitTime ? { detail: option.transitTime } : {}),
+              })),
+          );
 
     return {
         lineItems: items.map((item) => ({
@@ -130,7 +161,7 @@ export function buildShopPayPaymentRequest(
         deliveryMethods,
         supportedDeliveryMethodTypes: ['SHIPPING'],
         shippingLines: selectedShippingOptions.map((option) => ({
-            label: option.description,
+            label: describe(option),
             code: option.id,
             amount: toMoney(option.cost, currencyCode),
         })),
@@ -154,6 +185,10 @@ export async function createShopPaySdkSession(
         consignments?: Consignment[];
         coupons?: Coupon[];
         taxTotal?: number;
+        delivery?: {
+            availability?: ScheduledDeliveryAvailability;
+            selection?: ScheduledDeliverySelection;
+        };
     },
 ): Promise<ShopPaySdkSession> {
     const shopPay = await loadShopPaySdk();
@@ -171,6 +206,7 @@ export async function createShopPaySdkSession(
                 options.consignments,
                 options.coupons,
                 options.taxTotal,
+                options.delivery,
             ),
         ),
     });

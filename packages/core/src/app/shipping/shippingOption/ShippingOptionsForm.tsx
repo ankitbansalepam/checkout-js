@@ -1,10 +1,15 @@
-import { type CheckoutSelectors } from '@bigcommerce/checkout-sdk';
+import { type CheckoutSelectors, type ShippingOption } from '@bigcommerce/checkout-sdk';
 import { type FormikProps } from 'formik';
 import { noop } from 'lodash';
 import React, { type ReactElement, useEffect } from 'react';
 
 import { useAnalytics } from '@bigcommerce/checkout/contexts';
 import { TranslatedString } from '@bigcommerce/checkout/locale';
+import {
+    filterShippingOptionsForCart,
+    getShopPayBackendUrl,
+    useScheduledDelivery,
+} from '@bigcommerce/checkout/shop-pay-integration';
 
 import { withFormikExtended } from '../../common/form';
 import getRecommendedShippingOption from '../getRecommendedShippingOption';
@@ -45,6 +50,37 @@ const ShippingOptionsForm = (
         setValues,
     } = props;
     const { analyticsTracker } = useAnalytics();
+    // Scheduled-delivery carts only get the scheduled services; other carts don't.
+    const scheduledDelivery = useScheduledDelivery(getShopPayBackendUrl(), cart, {
+        countryCode: consignments?.[0]?.address?.countryCode,
+        postalCode: consignments?.[0]?.address?.postalCode,
+    });
+    const getAllowedOptions = (options: ShippingOption[] = []) =>
+        filterShippingOptionsForCart(options, scheduledDelivery.availability);
+
+    // Switch away from a selected option this cart may not use (e.g. Flat rate on a mattress).
+    useEffect(() => {
+        if (scheduledDelivery.status !== 'ready' || isMultiShippingMode) {
+            return;
+        }
+
+        (consignments || []).forEach((consignment) => {
+            const allowed = getAllowedOptions(consignment.availableShippingOptions);
+
+            if (
+                !allowed.length ||
+                allowed.some(({ id }) => id === consignment.selectedShippingOption?.id)
+            ) {
+                return;
+            }
+
+            const next = allowed.find(({ isRecommended }) => isRecommended) || allowed[0];
+
+            void Promise.resolve(selectShippingOption(consignment.id, next.id)).then(() =>
+                setFieldValue(`shippingOptionIds.${consignment.id}`, next.id),
+            );
+        });
+    }, [scheduledDelivery.availability, scheduledDelivery.status, consignments]);
 
     const selectDefaultShippingOptions = async ({ data }: CheckoutSelectors) => {
         const consignment = (data.getConsignments() || []).find(
@@ -127,11 +163,10 @@ const ShippingOptionsForm = (
                             consignment.selectedShippingOption &&
                             consignment.selectedShippingOption.id
                         }
-                        shippingOptions={consignment.availableShippingOptions}
+                        shippingOptions={getAllowedOptions(consignment.availableShippingOptions)}
                     />
 
-                    {(!consignment.availableShippingOptions ||
-                        !consignment.availableShippingOptions.length) && (
+                    {!getAllowedOptions(consignment.availableShippingOptions).length && (
                         <NoShippingOptions
                             isLoading={isLoading(consignment.id)}
                             message={invalidShippingMessage}

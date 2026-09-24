@@ -8,6 +8,10 @@ import {
     type ShopPaySubmitResult,
 } from './shopPayClient';
 import { getShopPayClientId, getShopPayShopId } from './shopPayConfig';
+import {
+    type ScheduledDeliveryAvailability,
+    type ScheduledDeliverySelection,
+} from './scheduledDelivery';
 import { buildShopPayPaymentRequest, createShopPaySdkSession } from './shopPaySdk';
 
 // The BigCommerce checkout after a change made in the Shop Pay popup.
@@ -31,6 +35,9 @@ export interface ShopPayButtonProps {
     onDeliveryMethodChanged?(shippingOptionId: string): Promise<ShopPayCheckoutUpdate>;
     onDiscountCodesChanged?(codes: string[]): Promise<ShopPayCheckoutUpdate & { coupons: Coupon[] }>;
     backendUrl: string;
+    // Scheduled (truck) delivery: the cart's availability and the date chosen in checkout.
+    deliveryAvailability?: ScheduledDeliveryAvailability;
+    scheduledDelivery?: ScheduledDeliverySelection;
     label?: string;
     onError?(error: Error): void;
 }
@@ -46,6 +53,8 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
     onDeliveryMethodChanged,
     onDiscountCodesChanged,
     backendUrl,
+    deliveryAvailability,
+    scheduledDelivery,
     label = 'Buy with Shop Pay',
     onError,
 }) => {
@@ -54,6 +63,8 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
     const handleClick = async () => {
         setIsLoading(true);
 
+        const delivery = { availability: deliveryAvailability, selection: scheduledDelivery };
+
         try {
             const sdkSession = await createShopPaySdkSession(cart, {
                 shopId: getShopPayShopId(),
@@ -61,6 +72,7 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                 consignments,
                 coupons,
                 taxTotal,
+                delivery,
             });
             // Latest BigCommerce checkout state; every payment request is rebuilt from it so the
             // Shop Pay total always matches the BigCommerce checkout total the backend verifies.
@@ -71,6 +83,7 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                     latest.consignments,
                     latest.coupons,
                     latest.taxTotal,
+                    delivery,
                 );
             let backendSession: Awaited<ReturnType<typeof createShopPaySession>>;
             // One backend session per attempt: Shop Pay can ask twice, and a second Shopify
@@ -93,6 +106,7 @@ export const ShopPayButton: FunctionComponent<ShopPayButtonProps> = ({
                         coupons,
                         sourceIdentifier,
                         taxTotal,
+                        scheduledDelivery: deliveryAvailability?.scheduled ? scheduledDelivery : undefined,
                     });
                     backendSession = await backendSessionRequest;
                     sdkSession.completeSessionRequest({

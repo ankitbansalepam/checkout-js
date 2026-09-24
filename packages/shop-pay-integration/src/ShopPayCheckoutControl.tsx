@@ -2,6 +2,12 @@ import React, { type FunctionComponent } from 'react';
 
 import { useCheckout } from '@bigcommerce/checkout/contexts';
 
+import {
+    fetchScheduledDeliveryOptions,
+    filterShippingOptionsForCart,
+    getCartProductIds,
+    useScheduledDelivery,
+} from './scheduledDelivery';
 import { ShopPayButton, type ShopPayButtonProps } from './ShopPayButton';
 
 export type ShopPayCheckoutControlProps = Omit<ShopPayButtonProps, 'cart'> & {
@@ -31,6 +37,12 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         coupons: data.getCoupons() || [],
         isSignedIn: data.getCustomer()?.isGuest === false,
     }));
+    const delivery = useScheduledDelivery(props.backendUrl, cart, {
+        countryCode: consignments[0]?.address?.countryCode,
+        postalCode: consignments[0]?.address?.postalCode,
+    });
+    const deliveryAvailability = delivery.availability;
+    const isScheduledDelivery = Boolean(deliveryAvailability?.scheduled);
 
     if (!cart) {
         return null;
@@ -50,10 +62,27 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         initialReadinessByCartId.set(cart.id, hasBillingAddress && hasSelectedShipping);
     }
 
-    const isReadyForTop = isSignedIn || initialReadinessByCartId.get(cart.id);
+    // Scheduled-delivery carts never use the top button: the delivery service, date and
+    // instructions are chosen in the shipping step, which the express flow would skip.
+    const isDeliveryKnown = delivery.status === 'ready' || delivery.status === 'error';
+    const isReadyForTop =
+        isDeliveryKnown &&
+        !isScheduledDelivery &&
+        (isSignedIn || initialReadinessByCartId.get(cart.id));
 
     if ((placement === 'top') !== isReadyForTop) {
         return null;
+    }
+
+    if (
+        isScheduledDelivery &&
+        (deliveryAvailability?.eligible === false || !delivery.selection?.date)
+    ) {
+        return (
+            <p className="shopPayScheduledDeliveryNote">
+                Choose a delivery date in the Delivery step to pay with Shop Pay.
+            </p>
+        );
     }
 
     const onDiscountCodesChanged = async (codes: string[]) => {
@@ -167,7 +196,10 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
         // delivery method shown in Shop Pay and Shopify declines the payment.
         await Promise.all(
             (checkoutService.getState().data.getConsignments() || []).map((consignment) => {
-                const options = consignment.availableShippingOptions || [];
+                const options = filterShippingOptionsForCart(
+                    consignment.availableShippingOptions || [],
+                    deliveryAvailability,
+                );
                 const previousOptionId = consignments.find(({ id }) => id === consignment.id)
                     ?.selectedShippingOption?.id;
                 const option =
@@ -196,6 +228,22 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
             );
         }
 
+        // Truck availability depends on the address, so the chosen date must still be offered.
+        if (isScheduledDelivery && delivery.selection) {
+            const updatedAddress = updatedConsignments[0]?.address;
+            const availability = await fetchScheduledDeliveryOptions(
+                props.backendUrl,
+                getCartProductIds(cart),
+                { countryCode: updatedAddress?.countryCode, postalCode: updatedAddress?.postalCode },
+            );
+
+            if (!availability.dates.includes(delivery.selection.date)) {
+                throw new Error(
+                    "Your delivery date isn't available at this address. Close Shop Pay and choose a new date in the Delivery step.",
+                );
+            }
+        }
+
         return {
             cart: checkoutService.getState().data.getCart() || cart,
             consignments: updatedConsignments,
@@ -210,6 +258,8 @@ export const ShopPayCheckoutControl: FunctionComponent<ShopPayCheckoutControlPro
             taxTotal={checkout?.taxTotal || 0}
             consignments={consignments}
             coupons={coupons}
+            deliveryAvailability={deliveryAvailability}
+            scheduledDelivery={delivery.selection}
             onDeliveryMethodChanged={onDeliveryMethodChanged}
             onShippingAddressChanged={onShippingAddressChanged}
             onDiscountCodesChanged={onDiscountCodesChanged}

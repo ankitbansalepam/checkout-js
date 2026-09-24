@@ -6,6 +6,17 @@ import { resetShopPayPlacement, ShopPayCheckoutControl } from './ShopPayCheckout
 let checkoutData: Record<string, unknown>;
 let checkoutService: Record<string, unknown>;
 let buttonProps: Record<string, any>;
+let deliveryState: Record<string, any>;
+
+const parcelDelivery = {
+    status: 'ready',
+    availability: { scheduled: false, services: ['White Glove Delivery'], eligible: null, dates: [] },
+};
+
+jest.mock('./scheduledDelivery', () => ({
+    ...jest.requireActual('./scheduledDelivery'),
+    useScheduledDelivery: () => deliveryState,
+}));
 
 jest.mock('@bigcommerce/checkout/contexts', () => ({
     useCheckout: (selector: (state: { data: Record<string, () => unknown> }) => unknown) => ({
@@ -42,6 +53,7 @@ const renderAt = (placement: 'top' | 'payment') =>
 
 beforeEach(() => {
     checkoutService = {};
+    deliveryState = parcelDelivery;
     resetShopPayPlacement();
 });
 
@@ -120,6 +132,53 @@ describe('ShopPayCheckoutControl placement for signed-in shoppers', () => {
 
         renderAt('payment');
         expect(screen.getAllByText('Shop Pay')).toHaveLength(1);
+    });
+});
+
+describe('ShopPayCheckoutControl scheduled delivery', () => {
+    const scheduledAvailability = {
+        scheduled: true,
+        services: ['White Glove Delivery'],
+        eligible: true,
+        dates: ['2026-09-29'],
+    };
+
+    beforeEach(() => {
+        checkoutData = {
+            billingAddress,
+            cart: physicalCart,
+            consignments: [shippedConsignment],
+            customer: { isGuest: false },
+        };
+    });
+
+    it('never shows the top button for a scheduled-delivery cart', () => {
+        deliveryState = { status: 'ready', availability: scheduledAvailability };
+
+        renderAt('top');
+
+        expect(screen.queryByText('Shop Pay')).not.toBeInTheDocument();
+    });
+
+    it('asks for a delivery date before offering Shop Pay in the payment step', () => {
+        deliveryState = { status: 'ready', availability: scheduledAvailability };
+
+        renderAt('payment');
+
+        expect(screen.queryByText('Shop Pay')).not.toBeInTheDocument();
+        expect(screen.getByText(/Choose a delivery date/)).toBeInTheDocument();
+    });
+
+    it('passes the chosen date to Shop Pay in the payment step', () => {
+        const selection = { date: '2026-09-29', instructions: 'Buzz 12' };
+
+        deliveryState = { status: 'ready', availability: scheduledAvailability, selection };
+
+        renderAt('payment');
+
+        expect(screen.getByText('Shop Pay')).toBeInTheDocument();
+        expect(buttonProps.scheduledDelivery).toEqual(selection);
+        expect(buttonProps.deliveryAvailability).toEqual(scheduledAvailability);
     });
 });
 

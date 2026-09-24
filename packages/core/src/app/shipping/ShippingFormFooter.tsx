@@ -5,6 +5,11 @@ import { Extension } from '@bigcommerce/checkout/checkout-extension';
 import { useThemeContext } from '@bigcommerce/checkout/contexts';
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 import {
+    isScheduledDeliveryIncomplete,
+    ScheduledDeliveryFields,
+    useScheduledDeliveryState,
+} from '@bigcommerce/checkout/shop-pay-integration';
+import {
     Alert,
     AlertType,
     Button,
@@ -41,6 +46,8 @@ const ShippingFormFooter: FunctionComponent<ShippingFormFooterProps> = ({
     shippingFormRenderTimestamp,
 }) => {
     const { enhancedThemeV1 } = useThemeContext();
+    // Scheduled-delivery carts need an eligible address and a delivery date to continue.
+    const isScheduledDeliveryBlocking = isScheduledDeliveryIncomplete(useScheduledDeliveryState());
 
     return (
         <>
@@ -77,12 +84,14 @@ const ShippingFormFooter: FunctionComponent<ShippingFormFooterProps> = ({
                 />
             </Fieldset>
 
+            {!isMultiShippingMode && <ScheduledDeliveryFields />}
+
             {shouldShowOrderComments && <OrderComments />}
 
             <div className="form-actions">
                 <Button
                     className="optimizedCheckout-contentPrimary body-bold"
-                    disabled={shouldDisableSubmit}
+                    disabled={shouldDisableSubmit || (!isMultiShippingMode && isScheduledDeliveryBlocking)}
                     id="checkout-shipping-continue"
                     isLoading={isLoading}
                     type="submit"

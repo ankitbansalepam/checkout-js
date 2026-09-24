@@ -9,3 +9,12 @@ export {
 export { getShopPayBackendUrl } from './shopPayConfig';
 export { getShopPayClientId, getShopPayShopId } from './shopPayConfig';
 export { buildShopPayPaymentRequest, createShopPaySdkSession, createShopPayLogin } from './shopPaySdk';
+export { ScheduledDeliveryFields } from './ScheduledDeliveryFields';
+export {
+    filterShippingOptionsForCart,
+    isScheduledDeliveryIncomplete,
+    useScheduledDelivery,
+    useScheduledDeliveryState,
+    type ScheduledDeliveryAvailability,
+    type ScheduledDeliverySelection,
+} from './scheduledDelivery';

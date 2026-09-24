@@ -55,8 +55,9 @@ export function createShopPaySession(
         coupons = [],
         sourceIdentifier = `bc-${cart.id}`,
         taxTotal = 0,
+        scheduledDelivery,
         fetcher = fetch,
-    }: ShopPayClientOptions & { coupons?: Coupon[] },
+    }: ShopPayClientOptions & { coupons?: Coupon[]; scheduledDelivery?: { date: string; instructions: string } },
 ): Promise<ShopPaySession> {
     const items = [...cart.lineItems.physicalItems, ...cart.lineItems.digitalItems];
     const currencyCode = cart.currency.code;
@@ -67,6 +68,7 @@ export function createShopPaySession(
         body: JSON.stringify({
             sourceIdentifier,
             ...(bcOrderId ? { bcOrderId } : {}),
+            ...(scheduledDelivery ? { scheduledDelivery } : {}),
             cart: {
                 cartId: cart.id,
                 currencyCode,
