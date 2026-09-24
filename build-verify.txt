@@ -1,0 +1,613 @@
+
+> @bigcommerce/checkout@1.895.3 prebuild
+> rm -rf dist && rm -rf packages/test-framework/report
+
+
+> @bigcommerce/checkout@1.895.3 build
+> npm-run-all nx:build
+
+
+> @bigcommerce/checkout@1.895.3 nx:build
+> nx run core:build
+
+
+ NX   Running target build for project core and 1 task it depends on:
+
+
+
+> nx run core:generate
+
+> rm -rf packages/core/src/app/generated
+
+> npx nx generate @bigcommerce/checkout/workspace-tools:auto-export --projectName=core
+
+[1m[33m[7m[1m[36m NX [39m[33m[22m[1m[27m Falling back to ts-node for local typescript execution. This may be a little slower.[39m[22m
+[1m[33m  - To fix this, ensure @swc-node/register and @swc/core have been installed[39m[22m
+
+[7m[1m[36m NX [39m[22m[27m [1mGenerating @bigcommerce/checkout/workspace-tools:auto-export[22m
+
+[32mCREATE[39m packages/core/src/app/generated/checkoutButtons/index.ts
+[32mCREATE[39m packages/core/src/app/generated/paymentIntegrations/index.ts
+> npx nx generate @bigcommerce/checkout/workspace-tools:polyfill-generator --projectName=core
+
+[1m[33m[7m[1m[36m NX [39m[33m[22m[1m[27m Falling back to ts-node for local typescript execution. This may be a little slower.[39m[22m
+[1m[33m  - To fix this, ensure @swc-node/register and @swc/core have been installed[39m[22m
+
+[7m[1m[36m NX [39m[22m[27m [1mGenerating @bigcommerce/checkout/workspace-tools:polyfill-generator[22m
+
+Generated polyfill file at packages\core\src\app\generated\polyfill\index.ts
+Browser targets: 32 browsers
+Required polyfills: 214 polyfills
+[32mCREATE[39m packages/core/src/app/generated/polyfill/index.ts
+
+> nx run core:build  [existing outputs match the cache, left as is]
+
+[2m> [22mwebpack --mode production
+
+(node:35508) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: lighten() is deprecated. Suggestions:
+
+color.scale($color, $lightness: 18.75%)
+color.adjust($color, $lightness: 15%)
+
+More info: https://sass-lang.com/d/color-functions
+Sass Warning: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -75%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+Sass Warning: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -24.3630573248%)
+color.adjust($color, $lightness: -15%)
+
+More info: https://sass-lang.com/d/color-functions
+Sass Warning: Global built-in functions are deprecated and will be removed in Dart Sass 3.0.0.
+Use color.adjust instead.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: darken() is deprecated. Suggestions:
+
+color.scale($color, $lightness: -40.6050955414%)
+color.adjust($color, $lightness: -25%)
+
+More info: https://sass-lang.com/d/color-functions
+Sass Warning: 581 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 52 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 53 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 52 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 52 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 51 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: Sass @import rules are deprecated and will be removed in Dart Sass 3.0.0.
+
+More info and automated migrator: https://sass-lang.com/d/import
+Sass Warning: 49 repetitive deprecation warnings omitted.
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+Sass Warning: The legacy JS API is deprecated and will be removed in Dart Sass 2.0.0.
+
+More info: https://sass-lang.com/d/legacy-js-api
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Managed item C:\Project\checkout-js\node_modules\@nodelib isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
+<w> [webpack.cache.PackFileCacheStrategy/webpack.FileSystemInfo] Managed item C:\Project\checkout-js\node_modules\@babel isn't a directory or doesn't contain a package.json (see snapshot.managedPaths option)
+assets by path [1m[32m*.js[39m[22m 3.83 MiB
+  assets by chunk 2.48 MiB (id hint: vendors) 13 assets
+  + 77 assets
+assets by path [1m[32m*.css[39m[22m 228 KiB
+  asset [1m[32mcheckout-db2d4b45.css[39m[22m 134 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m (name: checkout) 1 related asset
+  asset [1m[32m6493-2c44387d.css[39m[22m 21 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m 1 related asset
+  asset [1m[32mbig-commerce-payments-button-7890b7ce.css[39m[22m 19.8 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m (name: big-commerce-payments-button) 1 related asset
+  + 19 assets
+assets by path [1m[32mstatic/[39m[22m 127 KiB
+  assets by path [1m[32mstatic/*.webp[39m[22m 124 KiB 2 assets
+  asset [1m[32mstatic/powered_by_google_on_white-46afd78d.png[39m[22m 2.08 KiB [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [from: packages/core/src/static/img/powered_by_google_on_white.png]
+  asset [1m[32mstatic/card-e28a505e.svg[39m[22m 677 bytes [1m[32m[emitted][39m[22m [1m[32m[immutable][39m[22m [from: packages/core/src/static/svg/card.svg] (auxiliary name: checkout)
+asset [1m[32mmanifest-app-1.895.4.json[39m[22m 32.7 KiB [1m[32m[emitted][39m[22m
+Entrypoint [1mcheckout[39m[22m [1m[33m[big][39m[22m 1.44 MiB (6.34 MiB) = [1m[32mruntime-c08e73d1.js[39m[22m 14.3 KiB [1m[32m1373-96cc1770.js[39m[22m 1.1 MiB [1m[32mcheckout-db2d4b45.css[39m[22m 134 KiB [1m[32mcheckout-b4663f67.js[39m[22m 198 KiB 5 auxiliary assets
+orphan modules 4.92 MiB (javascript) 127 KiB (asset) 1.06 KiB (runtime) [1m[33m[orphan][39m[22m 1259 modules
+runtime modules 61 KiB 230 modules
+cacheable modules 6.78 MiB (javascript) 168 KiB (css/mini-extract)
+  modules by path [1m./node_modules/[39m[22m 4.76 MiB (javascript) 18.4 KiB (css/mini-extract) 719 modules
+  modules by path [1m./packages/[39m[22m 2.02 MiB (javascript) 150 KiB (css/mini-extract)
+    javascript modules 2.02 MiB 314 modules
+    css modules 150 KiB
+      modules by path [1m./packages/core/src/[39m[22m 144 KiB 20 modules
+      modules by path [1m./packages/ui/src/[39m[22m 858 bytes 7 modules
+      modules by path [1m./packages/bigcommerce-payments-integration/src/[39m[22m 1.28 KiB 3 modules
+      modules by path [1m./packages/paypal-commerce-integration/src/[39m[22m 1.21 KiB 3 modules
+      modules by path [1m./packages/braintree-integration/src/[39m[22m 1.04 KiB 3 modules
+      modules by path [1m./packages/paypal-fastlane-integration/src/[39m[22m 202 bytes 2 modules
+      + 4 modules
+
+[1m[33mWARNING[39m[22m in [1masset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+This can impact web performance.
+Assets: 
+  intl-tel-input-utils-721eabbb.js (258 KiB)
+  react-datepicker-ad96336f.js (334 KiB)
+  1373-96cc1770.js (1.1 MiB)[39m[22m
+
+[1m[33mWARNING[39m[22m in [1mentrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+Entrypoints:
+  checkout (1.44 MiB)
+      runtime-c08e73d1.js
+      1373-96cc1770.js
+      checkout-db2d4b45.css
+      checkout-b4663f67.js
+[39m[22m
+
+webpack 5.105.0 compiled with [1m[33m2 warnings[39m[22m in 51920 ms
+
+asset [1m[32mtranslations-sv-1.895.4.js[39m[22m 99.5 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-sv)
+asset [1m[32mtranslations-ja-1.895.4.js[39m[22m 56.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-ja)
+asset [1m[32mtranslations-fr-1.895.4.js[39m[22m 54.9 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-fr)
+asset [1m[32mtranslations-de-1.895.4.js[39m[22m 54.3 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-de)
+asset [1m[32mtranslations-es-1.895.4.js[39m[22m 52.4 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es)
+asset [1m[32mtranslations-es-419-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-419)
+asset [1m[32mtranslations-es-ar-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-ar)
+asset [1m[32mtranslations-es-cl-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-cl)
+asset [1m[32mtranslations-es-mx-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-mx)
+asset [1m[32mtranslations-es-pe-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-pe)
+asset [1m[32mtranslations-es-co-1.895.4.js[39m[22m 51.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-es-co)
+asset [1m[32mtranslations-it-1.895.4.js[39m[22m 50.8 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-it)
+asset [1m[32mtranslations-pt-1.895.4.js[39m[22m 50.5 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-pt)
+asset [1m[32mtranslations-pt-br-1.895.4.js[39m[22m 50.5 KiB [1m[32m[emitted][39m[22m [1m[32m[minimized][39m[22m (name: translations-pt-br)
++ 7 assets
+orphan modules 1.82 MiB [1m[33m[orphan][39m[22m 443 modules
+runtime modules 18.2 KiB 26 modules
+cacheable modules 1.03 MiB
+  modules by path [1m./packages/[39m[22m 945 KiB
+    modules by path [1m./packages/locale/src/[39m[22m 933 KiB 19 modules
+    javascript modules 12.4 KiB
+      [1m./packages/core/src/app/auto-loader.ts[39m[22m 3.01 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+      [1m./packages/core/src/app/loader.ts + 9 modules[39m[22m 9.39 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+  modules by path [1m./node_modules/[39m[22m 106 KiB
+    modules by path [1m./node_modules/@bigcommerce/[39m[22m 49.6 KiB
+      modules by path [1m./node_modules/@bigcommerce/script-loader/lib/*.js[39m[22m 11.2 KiB 8 modules
+      modules by path [1m./node_modules/@bigcommerce/request-sender/[39m[22m 38.4 KiB
+        [1m./node_modules/@bigcommerce/request-sender/esm/index.js + 10 modules[39m[22m 29.1 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+        [1m./node_modules/@bigcommerce/request-sender/node_modules/query-string/index.js[39m[22m 9.3 KiB [1m[33m[built][39m[22m [1m[33m[code generated][39m[22m
+    + 6 modules
+
+[1m[33mWARNING[39m[22m in [1mDefinePlugin
+[1m[31mConflicting[39m[22m[1m values for 'MANIFEST_JSON'[39m[22m
+
+1 warning has detailed information that is not shown.
+Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+
+webpack 5.105.0 compiled with [1m[33m1 warning[39m[22m in 55332 ms
+
+
+
+ NX   Successfully ran target build for project core and 1 task it depends on
+
+Nx read the output from the cache instead of running the command for 1 out of 2 tasks.
+

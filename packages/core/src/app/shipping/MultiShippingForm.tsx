@@ -1,0 +1,171 @@
+import React, { type FunctionComponent, type ReactNode, useMemo, useState } from 'react';
+
+import {
+    TranslatedString,
+    withLanguage,
+    type WithLanguageProps,
+} from '@bigcommerce/checkout/locale';
+import { Alert, AlertType, Button, ButtonVariant } from '@bigcommerce/checkout/ui';
+
+import { withFormikExtended } from '../common/form';
+
+import ConsignmentListItem from './ConsignmentListItem';
+import hasSelectedShippingOptions from './hasSelectedShippingOptions';
+import { useMultiShippingConsignmentItems } from './hooks/useMultishippingConsignmentItems';
+import { useShipping } from './hooks/useShipping';
+import isSelectedShippingOptionValid from './isSelectedShippingOptionValid';
+import MultiShippingFormFooter from './MultiShippingFormFooter';
+import { type MultiShippingConsignmentData } from './MultishippingType';
+import './MultiShippingForm.scss';
+import NewConsignment from './NewConsignment';
+
+export interface MultiShippingFormValues {
+    orderComment: string;
+}
+
+export interface MultiShippingFormProps {
+    cartHasChanged: boolean;
+    customerMessage: string;
+    defaultCountryCode?: string;
+    onUnhandledError(error: Error): void;
+    onSubmit(values: MultiShippingFormValues): void;
+}
+
+const MultiShippingForm: FunctionComponent<MultiShippingFormProps> = ({
+    defaultCountryCode,
+    onUnhandledError,
+    cartHasChanged,
+}: MultiShippingFormProps) => {
+    const [errorConsignmentNumber, setErrorConsignmentNumber] = useState<number | undefined>();
+
+    const { consignments, shouldShowOrderComments, shippingQuoteFailedMessage, isLoading } =
+        useShipping();
+    const {
+        unassignedItems: { lineItems: unassignedLineItems, shippableItemsCount },
+        consignmentList,
+    } = useMultiShippingConsignmentItems();
+
+    const [isAddShippingDestination, setIsAddShippingDestination] = useState(
+        consignments.length === 0,
+    );
+
+    const isEveryConsignmentHasShippingOption = hasSelectedShippingOptions(consignments);
+    const shouldDisableSubmit = useMemo(() => {
+        return (
+            isLoading ||
+            !!unassignedLineItems.length ||
+            !isEveryConsignmentHasShippingOption ||
+            !isSelectedShippingOptionValid(consignments)
+        );
+    }, [isLoading, consignments]);
+
+    const handleAddShippingDestination = () => {
+        if (!isAddShippingDestination && !isEveryConsignmentHasShippingOption) {
+            const errorConsignmentIndex = consignments.findIndex(
+                (consignment) => !consignment.selectedShippingOption,
+            );
+
+            if (errorConsignmentIndex === -1) {
+                setIsAddShippingDestination(true);
+
+                return;
+            }
+
+            setErrorConsignmentNumber(errorConsignmentIndex + 1);
+        } else if (isAddShippingDestination) {
+            setErrorConsignmentNumber(consignments.length + 1);
+        } else {
+            setErrorConsignmentNumber(undefined);
+            setIsAddShippingDestination(true);
+        }
+    };
+
+    const hasUnassignedItems = shippableItemsCount > 0;
+
+    const renderAllocatedBanner = (shippableItemsCount: number): ReactNode => {
+        if (shippableItemsCount > 0) {
+            return (
+                <Alert additionalClassName="body-regular" type={AlertType.Info}>
+                    <TranslatedString
+                        data={{ count: shippableItemsCount }}
+                        id="shipping.multishipping_item_to_allocate_message"
+                    />
+                </Alert>
+            );
+        }
+
+        return (
+            <Alert additionalClassName="body-regular" type={AlertType.Success}>
+                <TranslatedString id="shipping.multishipping_all_items_allocated_message" />
+            </Alert>
+        );
+    };
+    const resetErrorConsignmentNumber = () => {
+        setErrorConsignmentNumber(undefined);
+    };
+
+    return (
+        <>
+            {renderAllocatedBanner(shippableItemsCount)}
+            {consignmentList.map((consignment: MultiShippingConsignmentData) => (
+                <ConsignmentListItem
+                    consignment={consignment}
+                    consignmentNumber={consignment.consignmentNumber}
+                    defaultCountryCode={defaultCountryCode}
+                    isLoading={isLoading}
+                    key={consignment.id}
+                    onUnhandledError={onUnhandledError}
+                    resetErrorConsignmentNumber={resetErrorConsignmentNumber}
+                    shippingQuoteFailedMessage={shippingQuoteFailedMessage}
+                />
+            ))}
+            {isAddShippingDestination && (
+                <NewConsignment
+                    consignmentNumber={consignments.length === 0 ? 1 : consignments.length + 1}
+                    defaultCountryCode={defaultCountryCode}
+                    isLoading={isLoading}
+                    onUnhandledError={onUnhandledError}
+                    resetErrorConsignmentNumber={resetErrorConsignmentNumber}
+                    setIsAddShippingDestination={setIsAddShippingDestination}
+                />
+            )}
+            {hasUnassignedItems && (
+                <Button
+                    className="optimizedCheckout-contentPrimary body-regular add-consignment-button"
+                    onClick={handleAddShippingDestination}
+                    variant={ButtonVariant.Secondary}
+                >
+                    <TranslatedString id="shipping.multishipping_add_new_destination" />
+                </Button>
+            )}
+            {Boolean(errorConsignmentNumber) && (
+                <div className="form-field--error">
+                    <span className="form-inlineMessage">
+                        <TranslatedString
+                            data={{ consignmentNumber: errorConsignmentNumber }}
+                            id="shipping.multishipping_incomplete_consignment_error"
+                        />
+                    </span>
+                </div>
+            )}
+            <MultiShippingFormFooter
+                cartHasChanged={cartHasChanged}
+                isLoading={isLoading}
+                shouldDisableSubmit={shouldDisableSubmit}
+                shouldShowOrderComments={shouldShowOrderComments}
+            />
+        </>
+    );
+};
+
+export default withLanguage(
+    withFormikExtended<MultiShippingFormProps & WithLanguageProps, MultiShippingFormValues>({
+        handleSubmit: (values, { props: { onSubmit } }) => {
+            onSubmit(values);
+        },
+        mapPropsToValues: ({ customerMessage }) => ({
+            orderComment: customerMessage,
+        }),
+        enableReinitialize: true,
+    })(MultiShippingForm),
+);

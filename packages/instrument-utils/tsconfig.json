@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "references": [
+    {
+      "path": "./tsconfig.spec.json"
+    }
+  ],
+  "files": [
+    "./types/card-validator.d.ts"
+  ]
+}

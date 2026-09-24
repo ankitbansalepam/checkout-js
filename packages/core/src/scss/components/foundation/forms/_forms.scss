@@ -1,0 +1,284 @@
+// =============================================================================
+// FORMS
+// =============================================================================
+
+// BCApp Form specifics
+// -----------------------------------------------------------------------------
+//
+// 1. If set to false, there is no outputted CSS for this component.
+// 2. Select boxes, Foundation, and Chrome autofill styling. Basically undo Foundation
+// so autofilled select boxes don't look broken when the backgrounds are highjacked.
+// The important combats Foundations important too.
+//
+// -----------------------------------------------------------------------------
+
+@if $exportCSS--forms { // 1
+
+    .form {
+        @include breakpoint("large") {
+            max-width: remCalc(540px);
+        }
+    }
+
+    .form-fieldset {
+        margin-bottom: #{spacing("half") + spacing("third")};
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .form-fieldset--storedInstrument,.form-fieldset--creditCardFieldset {
+        margin-bottom: spacing("half");
+    }
+
+    #checkoutShippingAddress.form-fieldset:has(.floating-form-field) {
+        margin-bottom: $fontSize-root - $floating-form-field-spacing;
+    }
+
+    .floating-fieldset {
+        .form-fieldset {
+            margin-bottom: 0;
+        }
+    }
+
+    .floating-input, .floating-select, .floating-textarea {
+        background-color: $floating-label-bg-color;
+    }
+
+    .form-field {
+        position: relative;
+        margin: 0 0 spacing("half");
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        .floating-input,
+        .floating-select {
+            font-size: $input-font-size--mobile-min;
+            height: $floating-label-input-height;
+            padding-bottom: 0;
+            padding-left: $input-horizontalPadding;
+            padding-right: $input-horizontalPadding;
+            padding-top: $input-verticalPadding * 1.5;
+
+            @media (min-width: $screen-small) and (min-height: $screen-small-landscape-height) {
+                font-size: $floating-label-font-size--default;
+            }
+
+            &.floating-form-field-input {
+                font-family: $fontFamily-montserrat;
+                font-size: $input-font-size--mobile-min;
+                font-weight: $fontWeight-normal;
+
+                @media (min-width: $screen-small) and (min-height: $screen-small-landscape-height) {
+                    font-size: $fontSize-smallest;
+                }
+            }
+        }
+
+        .floating-textarea {
+            padding-top: $input-verticalPadding * 2.5;
+        }
+
+        // phone validation
+        .iti {
+            display: block;
+            position: relative;
+            width: 100%;
+
+            input.iti__tel-input {
+                float: none;
+            }
+
+            .iti__selected-country-primary {
+                // remove default background to align with out form style
+                background-color: transparent !important;
+            }
+
+            .iti__dropdown-content {
+                max-width: remCalc(300px);
+            }
+        }
+
+        .iti-wrapper {
+            display: block;
+
+            .iti__country-container:has(+ input.floating-input) {
+                top: $input-verticalPadding * 1.5;
+                bottom: auto;
+                height: $floating-label-input-height - $input-verticalPadding * 1.5;
+                padding-top: $input-verticalPadding * 0.5;
+                padding-bottom: $input-verticalPadding * 0.5;
+            }
+
+            .iti__selected-country-primary {
+                padding: 0 var(--iti-arrow-padding) 0 1.05rem;
+            }
+        }
+
+        .dropdown-chevron,
+        .floating-select-chevron {
+            position: absolute;
+            right: $input-horizontalPadding;
+            top: $floating-chevron-top + $fontSize-root * lineHeight("large");
+        }
+
+        .floating-select-chevron {
+            top: $floating-chevron-top;
+        }
+
+        .floating-label {
+            font-size: $floating-label-font-size--default;
+            left: $input-horizontalPadding * 1.05;
+            line-height: $floating-label-line-height--default;
+            position: absolute;
+            top: $floating-label-top--default;
+            transition: $floating-label-transition;
+
+            small {
+                font-size: $floating-label-font-size--default;
+                vertical-align: baseline;
+            }
+        }
+
+        .react-datepicker__tab-loop + .floating-label,
+        .react-datepicker-wrapper + .floating-label,
+        .iti-wrapper + .floating-label,
+        select + .floating-label,
+        textarea:focus + .floating-label,
+        textarea:not(:empty) + .floating-label,
+        input:focus + .floating-label,
+        input:not(:placeholder-shown) + .floating-label {
+            color: $floating-label-color;
+            display: block;
+            font-size: fontSize("tiny");
+            line-height: $floating-label-line-height--focus;
+            top: $floating-label-top--focus;
+
+            small {
+                font-size: fontSize("tiny");
+            }
+        }
+    }
+
+    .form-field:not(.form-field--error) {
+        .floating-input:not(:focus),
+        .floating-select:not(:focus),
+        .floating-textarea {
+            border-color: $floating-label-border-color;
+        }
+    }
+
+    .form-input {
+        font-size: $input-font-size--mobile-min;
+
+        @media (min-width: $screen-small) and (min-height: $screen-small-landscape-height) {
+            font-size: $input-font-size;
+        }
+
+        &:focus,
+        &--focus {
+            box-shadow: $input-focus-boxShadow, $input-box-shadow;
+        }
+
+        &.form-input--withIcon {
+            padding-right: #{$input-formIcon-width + spacing("single")};
+        }
+    }
+
+    .enhancedThemeV1 .form-input.body-regular {
+        font-size: $input-font-size--mobile-min;
+
+        @media (min-width: $screen-small) and (min-height: $screen-small-landscape-height) {
+            font-size: $fontSize-base;
+        }
+    }
+
+    .form-input-icon {
+        height: $input-formIcon-width;
+        position: absolute;
+        right: spacing("half");
+        top: 50%;
+        transform: translateY(-50%);
+        width: $input-formIcon-width;
+    }
+
+    .form-actions {
+        margin: #{spacing("single") + spacing("quarter")} 0;
+        padding: 0;
+
+        .button:first-child {
+            margin-left: 0;
+        }
+    }
+
+    .form-body {
+        background-color: $formBody-backgroundColor;
+        margin: 0;
+        position: relative;
+    }
+
+    .form-field--error {
+        .form-input,
+        .form-select {
+            background-color: $color-errorLighter;
+            transition: background-color 0.8s ease-out;
+        }
+
+        .form-label:not(.floating-label) {
+            color: color("error");
+        }
+
+        .floating-label.form-label.optimizedCheckout-form-label {
+            color: $floating-label-color;
+        }
+    }
+
+    .form-input--error {
+        border-color: $color-error;
+        box-shadow: $input-box-shadow-error;
+    }
+
+    .form-legend-container {
+        align-items: center;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .form-legend {
+        @include headingStyle("h3");
+
+        background-color: $legend-bg;
+        color: $header-font-color;
+        font-weight: $legend-font-weight;
+        padding: 0 0 spacing("half") 0;
+        width: auto;
+    }
+
+    .form-toggle {
+        background-color: $legend-bg;
+        color: $header-font-color;
+        font-weight: $legend-font-weight;
+    }
+
+    .form-field-password {
+        position: relative;
+    }
+
+    // scss-lint:disable ImportantRule
+    .form-select {
+        -webkit-appearance: none; // 2
+        background-image: none;
+        border-radius: $input-border-radius;
+        font-size: $input-font-size--mobile-min;
+        padding: $input-verticalPadding $select-paddingRight $input-verticalPadding $input-horizontalPadding;
+
+        @media (min-width: $screen-small) and (min-height: $screen-small-landscape-height) {
+            font-size: $input-font-size;
+        }
+    }
+    // scss-lint:enable ImportantRule
+}

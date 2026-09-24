@@ -1,0 +1,126 @@
+// =============================================================================
+// ORDER CONFIRMATION (Component)
+// =============================================================================
+
+.orderConfirmation {
+    padding: spacing("double") 0 0;
+}
+
+.orderConfirmation-section {
+    border-bottom: container("border");
+    margin-bottom: (spacing("single") + spacing("base"));
+    padding: 0 0 (spacing("single") + spacing("base"));
+
+    *:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.continueButtonContainer {
+    margin-top: spacing("double");
+}
+
+.shopPayOrderConfirmation-details p,
+.shopPayOrderConfirmation-item,
+.shopPayOrderConfirmation-total {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.shopPayOrderConfirmation-details p {
+    margin-bottom: spacing("half");
+}
+
+.shopPayOrderConfirmation-details span {
+    margin-left: spacing("single");
+    text-align: right;
+}
+
+.shopPayOrderConfirmation-heading {
+    margin-bottom: spacing("single");
+}
+
+.shopPayOrderConfirmation-item {
+    border-bottom: container("border");
+    padding: spacing("half") 0;
+}
+
+.shopPayOrderConfirmation-item strong,
+.shopPayOrderConfirmation-total strong:last-child {
+    margin-left: spacing("single");
+    text-align: right;
+}
+
+.shopPayOrderConfirmation-total {
+    padding-top: spacing("single");
+}
+
+.shopPayOrderConfirmation-error {
+    color: color("error");
+}
+
+.shopPayOrderConfirmationLayout {
+    align-items: flex-start;
+}
+
+.shopPayOrderSummary .cart-header {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.shopPayOrderSummary-print {
+    background: none;
+    border: 0;
+    color: color("highlight");
+    cursor: pointer;
+    padding: 0;
+}
+
+.shopPayOrderSummary-count {
+    margin-bottom: spacing("single");
+}
+
+.shopPayOrderSummary-item,
+.shopPayOrderSummary-totals p,
+.shopPayOrderSummary-total {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.shopPayOrderSummary-item {
+    border-bottom: container("border");
+    padding: spacing("half") 0;
+}
+
+.shopPayOrderSummary-image {
+    height: remCalc(48px);
+    margin-right: spacing("half");
+    object-fit: contain;
+    width: remCalc(48px);
+}
+
+.shopPayOrderSummary-totals p {
+    margin-bottom: spacing("half");
+}
+
+.shopPayOrderSummary-total {
+    font-size: fontSize("large");
+}
+
+.trackingCodeIframe {
+    left: -5000px;
+    position: absolute;
+}
+
+@media print {
+    .guest-signup {
+        display: none;
+    }
+
+    .continueButtonContainer {
+        display: none;
+    }
+}

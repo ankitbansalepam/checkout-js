@@ -1,0 +1,156 @@
+import {
+    type Consignment,
+    type ConsignmentCreateRequestBody,
+    type ConsignmentLineItem,
+} from '@bigcommerce/checkout-sdk';
+import { find } from 'lodash';
+import React, { useMemo, useState } from 'react';
+
+import { preventDefault } from '@bigcommerce/checkout/dom-utils';
+import { TranslatedString } from '@bigcommerce/checkout/locale';
+
+import { isErrorWithType } from '../common/error';
+
+import AllocateItemsModal from './AllocateItemsModal';
+import ConsignmentAddressSelector from './ConsignmentAddressSelector';
+import { AssignItemFailedError } from './errors';
+import { useMultiShippingConsignmentItems } from './hooks/useMultishippingConsignmentItems';
+import { useShipping } from './hooks/useShipping';
+import { setRecommendedOrMissingShippingOption } from './utils';
+
+interface NewConsignmentProps {
+    consignmentNumber: number;
+    defaultCountryCode?: string;
+    isLoading: boolean;
+    setIsAddShippingDestination: React.Dispatch<React.SetStateAction<boolean>>;
+    onUnhandledError(error: Error): void;
+    resetErrorConsignmentNumber(): void;
+}
+
+const NewConsignment = ({
+    consignmentNumber,
+    defaultCountryCode,
+    isLoading,
+    onUnhandledError,
+    resetErrorConsignmentNumber,
+    setIsAddShippingDestination,
+}: NewConsignmentProps) => {
+    const [consignmentRequest, setConsignmentRequest] = useState<
+        ConsignmentCreateRequestBody | undefined
+    >();
+    const [isOpenAllocateItemsModal, setIsOpenAllocateItemsModal] = useState(false);
+
+    const { unassignedItems } = useMultiShippingConsignmentItems();
+    const {
+        countries,
+        assignItem,
+        selectConsignmentShippingOption,
+        getConsignments: getPreviousConsignments,
+    } = useShipping();
+
+    const selectedAddress = useMemo(() => {
+        if (!consignmentRequest?.address) {
+            return undefined;
+        }
+
+        const country = find(countries, { code: consignmentRequest.address.countryCode });
+
+        return {
+            ...consignmentRequest.address,
+            country: country ? country.name : consignmentRequest.address.countryCode,
+        };
+    }, [consignmentRequest, countries]);
+
+    const toggleAllocateItemsModal = () => {
+        setIsOpenAllocateItemsModal(!isOpenAllocateItemsModal);
+    };
+
+    const handleAllocateItems = async (consignmentLineItems: ConsignmentLineItem[]) => {
+        let currentConsignments: Consignment[] | undefined;
+
+        if (!selectedAddress) {
+            return;
+        }
+
+        const previousConsignments = getPreviousConsignments() ?? [];
+
+        try {
+            const {
+                data: { getConsignments },
+            } = await assignItem({
+                address: selectedAddress,
+                lineItems: consignmentLineItems,
+            });
+
+            currentConsignments = getConsignments();
+        } catch (error) {
+            if (error instanceof AssignItemFailedError) {
+                onUnhandledError(error);
+            }
+
+            if (isErrorWithType(error) && error.type === 'empty_cart') {
+                onUnhandledError(error);
+            }
+        } finally {
+            toggleAllocateItemsModal();
+            setIsAddShippingDestination(false);
+            resetErrorConsignmentNumber();
+
+            if (currentConsignments && currentConsignments.length > 0) {
+                await setRecommendedOrMissingShippingOption(
+                    previousConsignments,
+                    currentConsignments,
+                    selectConsignmentShippingOption,
+                );
+            }
+        }
+    };
+
+    return (
+        <div className="consignment-container">
+            <div className="consignment-header optimizedCheckout-headingSecondary sub-header">
+                <h3>
+                    <TranslatedString
+                        data={{ consignmentNumber }}
+                        id="shipping.multishipping_consignment_index_heading"
+                    />
+                </h3>
+            </div>
+            <ConsignmentAddressSelector
+                defaultCountryCode={defaultCountryCode}
+                isLoading={isLoading}
+                onUnhandledError={onUnhandledError}
+                selectedAddress={selectedAddress}
+                setConsignmentRequest={setConsignmentRequest}
+            />
+            {selectedAddress && (
+                <>
+                    <AllocateItemsModal
+                        address={selectedAddress}
+                        consignmentNumber={consignmentNumber}
+                        isLoading={isLoading}
+                        isOpen={isOpenAllocateItemsModal}
+                        onAllocateItems={handleAllocateItems}
+                        onRequestClose={toggleAllocateItemsModal}
+                        unassignedItems={unassignedItems}
+                    />
+                    <div className="new-consignment-line-item-header">
+                        <h3 className="optimizedCheckout-contentPrimary body-bold">
+                            <TranslatedString id="shipping.multishipping_no_item_allocated_message" />
+                        </h3>
+                        <a
+                            className="body-cta"
+                            data-test="allocate-items-button"
+                            href="#"
+                            onClick={preventDefault(toggleAllocateItemsModal)}
+                        >
+                            <TranslatedString id="shipping.multishipping_allocate_items" />
+                        </a>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
+
+export default NewConsignment;

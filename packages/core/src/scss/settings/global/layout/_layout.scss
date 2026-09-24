@@ -1,0 +1,42 @@
+@use "sass:math";
+// =============================================================================
+// DIMENSIONS (Layout / Grid)
+// =============================================================================
+
+// Layout
+// -----------------------------------------------------------------------------
+//
+// Define the layout width's for your project.
+//
+// -----------------------------------------------------------------------------
+
+// Max Width
+$layout-widthMax:               remCalc(1200px);
+
+// Fixed Width
+$layout-widthFixed:             90%;
+
+// Print media Widths
+$printLayout-widthFixed:        75%;
+
+// Spacing Rhythm
+// -----------------------------------------------------------------------------
+//
+// Create consistent spacing patterns in your entire projects aesthetics.
+// Build your components margins, paddings, etc based off these spacing vars.
+//
+// -----------------------------------------------------------------------------
+
+// Base Spacing
+$spacingRhythm:                 $fontSize-base * $lineHeight-base;
+
+$spacing-base:                  1rem;
+$spacing-single:                $spacingRhythm;
+$spacing-double:                $spacingRhythm * 2;
+
+$spacing-half:                  math.div($spacingRhythm, 2);
+$spacing-third:                 math.div($spacingRhythm, 3);
+$spacing-quarter:               math.div($spacingRhythm, 4);
+$spacing-fifth:                 math.div($spacingRhythm, 5);
+$spacing-sixth:                 math.div($spacingRhythm, 6);
+$spacing-eighth:                math.div($spacingRhythm, 8);

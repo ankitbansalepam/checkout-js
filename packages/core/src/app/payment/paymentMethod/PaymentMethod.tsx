@@ -1,0 +1,150 @@
+import {
+    type CheckoutSelectors,
+    type CustomerInitializeOptions,
+    type CustomerRequestOptions,
+    type PaymentInitializeOptions,
+    type PaymentMethod,
+    type PaymentRequestOptions,
+} from '@bigcommerce/checkout-sdk';
+import { createNoPaymentStrategy } from '@bigcommerce/checkout-sdk/integrations/no-payment';
+import React, { type FunctionComponent, lazy, memo, Suspense } from 'react';
+
+import { type CheckoutContextProps } from '@bigcommerce/checkout/contexts';
+import { CaptureMessageComponent } from '@bigcommerce/checkout/payment-integration-api';
+
+import { withCheckout } from '../../checkout';
+
+const HostedCreditCardPaymentMethod = lazy(
+    () =>
+        import(
+            /* webpackChunkName: "hosted-credit-card-payment-method" */ './HostedCreditCardPaymentMethod'
+        ),
+);
+const HostedPaymentMethod = lazy(
+    () => import(/* webpackChunkName: "hosted-payment-method" */ './HostedPaymentMethod'),
+);
+
+import PaymentMethodId from './PaymentMethodId';
+import PaymentMethodProviderType from './PaymentMethodProviderType';
+import PaymentMethodType from './PaymentMethodType';
+
+export interface PaymentMethodProps {
+    method: PaymentMethod;
+    isEmbedded?: boolean;
+    isUsingMultiShipping?: boolean;
+    onUnhandledError?(error: Error): void;
+    submitForm?(): void;
+}
+
+export interface WithCheckoutPaymentMethodProps {
+    isInitializing: boolean;
+    deinitializeCustomer(options: CustomerRequestOptions): Promise<CheckoutSelectors>;
+    deinitializePayment(options: PaymentRequestOptions): Promise<CheckoutSelectors>;
+    initializeCustomer(options: CustomerInitializeOptions): Promise<CheckoutSelectors>;
+    initializePayment(options: PaymentInitializeOptions): Promise<CheckoutSelectors>;
+}
+
+const KNOWN_API_METHOD_IDS = new Set([
+    'authorizenet',
+    'cybersourcev2',
+    'ewayrapid',
+    'nmi',
+    'bigpaypay',
+    'usaepay',
+    'googlepay',
+    'quickbooks',
+    'orbital',
+    'stripe',
+    'firstdatae4v14',
+    'cybersource',
+    'hps',
+    'clover',
+    'elavon',
+    'bnz',
+    'vantivcore',
+]);
+
+/**
+ * If possible, try to avoid having components that are specific to a specific
+ * payment provider or method. Instead, try to generalise the requirements and
+ * use components that can are reusable for multiple payment methods. i.e.:
+ * CreditCardPaymentMethod, HostedPaymentMethod etc... If it is really necessary
+ * for a particular payment method, you may write a method-specific component for
+ * the purpose of configuring a general-purpose component in order to fulfill
+ * its specific product or technical requirements.
+ */
+const PaymentMethodComponent: FunctionComponent<
+    PaymentMethodProps & WithCheckoutPaymentMethodProps
+> = (props) => {
+    const { method } = props;
+
+    if (method.id === PaymentMethodId.Humm || method.type === PaymentMethodProviderType.Hosted) {
+        const sentryMessage = `DataHostedPaymentMethod Hosted/Humm gateway=${method.gateway} id=${method.id} type=${method.type}`;
+
+        return (
+            <>
+                <CaptureMessageComponent message={sentryMessage} />
+                <Suspense>
+                    <HostedPaymentMethod {...props} />
+                </Suspense>
+            </>
+        );
+    }
+
+    // NOTE: Some payment methods have `method` as `credit-card` but they are
+    // actually not. Therefore, as a workaround, we are doing the following
+    // check last.
+    if (
+        method.method === PaymentMethodType.CreditCard ||
+        method.type === PaymentMethodProviderType.Api
+    ) {
+        const isKnownMethod =
+            method.gateway === null &&
+            method.type === PaymentMethodProviderType.Api &&
+            KNOWN_API_METHOD_IDS.has(method.id);
+
+        const sentryMessage = isKnownMethod
+            ? ''
+            : `DataHostedCreditCardPaymentMethod gateway=${method.gateway} id=${method.id} type=${method.type}`;
+
+        return (
+            <>
+                <CaptureMessageComponent message={sentryMessage} />
+                <Suspense>
+                    <HostedCreditCardPaymentMethod {...props} />
+                </Suspense>
+            </>
+        );
+    }
+
+    return null;
+};
+
+function mapToWithCheckoutPaymentMethodProps(
+    { checkoutService, checkoutState }: CheckoutContextProps,
+    { method }: PaymentMethodProps,
+): WithCheckoutPaymentMethodProps {
+    const {
+        statuses: { isInitializingPayment },
+    } = checkoutState;
+
+    return {
+        deinitializeCustomer: checkoutService.deinitializeCustomer,
+        deinitializePayment: checkoutService.deinitializePayment,
+        initializeCustomer: checkoutService.initializeCustomer,
+        initializePayment: (options) => {
+            return checkoutService.initializePayment({
+                ...options,
+                integrations: [
+                    ...(options.integrations ?? []),
+                    // The strategies below don’t appear to correspond to any existing component,
+                    // so they are initialized globally at the root level.
+                    createNoPaymentStrategy,
+                ],
+            });
+        },
+        isInitializing: isInitializingPayment(method.id),
+    };
+}
+
+export default withCheckout(mapToWithCheckoutPaymentMethodProps)(memo(PaymentMethodComponent));

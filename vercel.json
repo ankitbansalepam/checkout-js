@@ -1,0 +1,22 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/auto-loader-dev.js", "destination": "/auto-loader-dev-1.895.4.js" },
+    { "source": "/auto-loader.js", "destination": "/auto-loader-1.895.4.js" },
+    { "source": "/loader-dev.js", "destination": "/loader-dev-1.895.4.js" },
+    { "source": "/loader.js", "destination": "/loader-1.895.4.js" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, PUT, DELETE, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization" },
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" }
+      ]
+    }
+  ]
+}

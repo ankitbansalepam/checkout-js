@@ -1,0 +1,60 @@
+import { isExtraField } from '@bigcommerce/checkout-sdk/essential';
+import { memoize } from '@bigcommerce/memoize';
+import { object, type ObjectSchema, string, type StringSchema } from 'yup';
+
+import getCustomFormFieldsValidationSchema, {
+    type FormFieldsValidationSchemaOptions,
+} from './getCustomFormFieldsValidationSchema';
+import { getAddressExtraFieldsValidationSchema } from './getExtraFieldsValidationSchema';
+
+export const WHITELIST_REGEXP = /^[^<>]*$/;
+
+export interface FormFieldValues {
+    [key: string]: string | { [id: string]: any };
+}
+
+export default memoize(function getFormFieldsValidationSchema({
+    formFields,
+    translate = () => undefined,
+    validateMaxLength = false,
+}: FormFieldsValidationSchemaOptions): ObjectSchema<FormFieldValues> {
+    return object({
+        ...formFields
+            .filter((field) => !field.custom && !isExtraField(field))
+            .reduce<{ [key: string]: StringSchema }>(
+                (schema, { name, required, label, maxLength }) => {
+                    schema[name] = string();
+
+                    if (required) {
+                        schema[name] = schema[name]
+                            .trim()
+                            .required(translate('required', { label, name }));
+                    }
+
+                    if (validateMaxLength && maxLength) {
+                        schema[name] = schema[name].max(
+                            maxLength,
+                            translate('max', { label, name, max: maxLength }),
+                        );
+                    } else if ((name === 'address1' || name === 'address2') && maxLength) {
+                        schema[name] = schema[name].max(
+                            maxLength,
+                            translate('max', { label, name, max: maxLength }),
+                        );
+                    }
+
+                    schema[name] = schema[name].matches(
+                        WHITELIST_REGEXP,
+                        translate('invalid', { name, label }),
+                    );
+
+                    return schema;
+                },
+                {},
+            ),
+    })
+        .concat(getCustomFormFieldsValidationSchema({ formFields, translate }))
+        .concat(
+            getAddressExtraFieldsValidationSchema({ formFields, translate }),
+        ) as ObjectSchema<FormFieldValues>;
+});

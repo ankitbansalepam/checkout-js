@@ -1,0 +1,728 @@
+﻿
+> @bigcommerce/checkout@1.895.3 dev
+> npm-run-all nx:dev
+
+
+> @bigcommerce/checkout@1.895.3 nx:dev
+> nx run core:dev
+
+
+ NX   Running target dev for project core and 1 task it depends on:
+
+
+
+> nx run core:generate
+
+> rm -rf packages/core/src/app/generated
+
+> npx nx generate @bigcommerce/checkout/workspace-tools:auto-export --projectName=core
+
+npm : (node:46652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+At line:1 char:375
++ ... Path; cd 'C:\Project\checkout-js'; npm run dev *> dev-server.log 2>&1
++                                        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ((node:46652) Wa... env being set.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1m[33m[7m[1m[36m NX [39m[33m[22m[1m[27m Falling back to ts-node for local typescript execution. This may be 
+a little slower.[39m[22m
+[1m[33m  - To fix this, ensure @swc-node/register and @swc/core have been installed[39m[22m
+
+[7m[1m[36m NX [39m[22m[27m [1mGenerating @bigcommerce/checkout/workspace-tools:auto-export[22m
+
+(node:69820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[32mCREATE[39m packages/core/src/app/generated/checkoutButtons/index.ts
+[32mCREATE[39m packages/core/src/app/generated/paymentIntegrations/index.ts
+> npx nx generate @bigcommerce/checkout/workspace-tools:polyfill-generator --projectName=core
+
+(node:69896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1m[33m[7m[1m[36m NX [39m[33m[22m[1m[27m Falling back to ts-node for local typescript execution. This may be 
+a little slower.[39m[22m
+[1m[33m  - To fix this, ensure @swc-node/register and @swc/core have been installed[39m[22m
+
+[7m[1m[36m NX [39m[22m[27m [1mGenerating @bigcommerce/checkout/workspace-tools:polyfill-generator[22m
+
+Generated polyfill file at packages\core\src\app\generated\polyfill\index.ts
+Browser targets: 32 browsers
+Required polyfills: 214 polyfills
+[32mCREATE[39m packages/core/src/app/generated/polyfill/index.ts
+
+> nx run core:dev
+
+> webpack --mode development --watch
+
+Manifest compilation errors: [
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(13,9)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(15,16)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(18,5)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(20,12)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(55,16)[39m[22m
+  [1m[31m      TS2339: Property 'sentryOnLoad' does not exist on type 'Window & typeof globalThis'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(57,24)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(59,27)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(66,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(74,52)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(78,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(97,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(108,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\checkout\CheckoutPage.tsx(659,30)[39m[22m
+  [1m[31m      TS2339: Property 'prerendering' does not exist on type 'Document'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\s
+rc\app\payment\creditCard\configureCardValidator.ts(1,10)[39m[22m
+  [1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\instru
+ment-utils\src\creditCard\configureCardValidator.ts(1,10)[39m[22m
+  [1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d
+]
+(node:21224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+assets by path *.js 35.6 MiB
+  assets by status 29.9 MiB [compared for emit]
+    assets by chunk 22.7 MiB (id hint: vendors) 25 assets
+    + 79 assets
+  assets by status 5.75 MiB [emitted]
+    asset checkout.js 4.32 MiB [emitted] (name: checkout)
+    asset payment.js 1.02 MiB [emitted] (name: payment)
+    asset customer.js 421 KiB [emitted] (name: customer)
+assets by path static/ 127 KiB
+  assets by path static/*.webp 124 KiB
+    asset static/flags@2x.webp 86.6 KiB [compared for emit] [from: node_modules/intl-tel-input/dist/img/flags@2x.webp] (auxiliary id hint: vendors)
+    asset static/flags.webp 37.7 KiB [compared for emit] [from: node_modules/intl-tel-input/dist/img/flags.webp] (auxiliary id hint: vendors)
+  asset static/powered_by_google_on_white.png 2.08 KiB [compared for emit] [from: packages/core/src/static/img/powered_by_google_on_white.png]
+  asset static/card.svg 677 bytes [compared for emit] [from: packages/core/src/static/svg/card.svg] (auxiliary name: checkout)
+asset manifest-app-dev.json 245 bytes [compared for emit]
+Entrypoint checkout 16.5 MiB (677 bytes) = runtime.js 15.8 KiB vendors-node_modules_welldone-software_why-did-you-render_dist_umd_whyDidYouRender_min_js-nod-934c3d.js 12.2 MiB checkout.js 4.32 MiB 1 auxiliary asset
+cached modules 10.9 MiB (javascript) 127 KiB (asset) 9.53 KiB (runtime) [cached] 2299 modules
+orphan modules 785 bytes [orphan] 2 modules
+javascript modules 38.5 KiB
+  modules by path ./packages/core/src/app/ 28.1 KiB
+    modules by path ./packages/core/src/app/generated/ 23.9 KiB
+      ./packages/core/src/app/generated/checkoutButtons/index.ts 3.27 KiB [built] [code generated]
+      ./packages/core/src/app/generated/paymentIntegrations/index.ts 20.6 KiB [built] [code generated]
+    ./packages/core/src/app/checkout/components/CheckoutHeader.tsx 2.73 KiB [built] [code generated]
+    ./packages/core/src/app/customer/resolveCheckoutButton.ts 416 bytes [built] [code generated]
+    ./packages/core/src/app/payment/resolvePaymentMethod.ts 1.12 KiB [built] [code generated]
+  modules by path ./packages/shop-pay-integration/src/ 10.3 KiB
+    ./packages/shop-pay-integration/src/shopPayConfig.ts 897 bytes [built] [code generated]
+    ./packages/shop-pay-integration/src/ShopPayLoginControl.tsx 1.02 KiB [built] [code generated]
+    ./packages/shop-pay-integration/src/ShopPayButton.tsx 8.44 KiB [built] [code generated]
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts
+./packages/core/src/app/common/bundler/configurePublicPath.ts 13:8-31
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(13,9)[39m[22m
+[1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+ @ ./packages/core/src/app/common/bundler/index.ts 1:0-71 1:0-71
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 4:0-56 9:33-52
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts
+./packages/core/src/app/common/bundler/configurePublicPath.ts 15:15-38
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(15,16)[39m[22m
+[1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+ @ ./packages/core/src/app/common/bundler/index.ts 1:0-71 1:0-71
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 4:0-56 9:33-52
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts
+./packages/core/src/app/common/bundler/configurePublicPath.ts 18:4-27
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(18,5)[39m[22m
+[1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+ @ ./packages/core/src/app/common/bundler/index.ts 1:0-71 1:0-71
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 4:0-56 9:33-52
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts
+./packages/core/src/app/common/bundler/configurePublicPath.ts 20:11-34
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(20,12)[39m[22m
+[1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+ @ ./packages/core/src/app/common/bundler/index.ts 1:0-71 1:0-71
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 4:0-56 9:33-52
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 55:15-27
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(55,16)[39m[22m
+[1m[31m      TS2339: Property 'sentryOnLoad' does not exist on type 'Window & typeof globalThis'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 57:23-29
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(57,24)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 59:26-32
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(59,27)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 66:12-18
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(66,13)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 74:51-57
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(74,52)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 78:12-18
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(78,13)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 97:12-18
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(97,13)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts
+./packages/core/src/app/common/error/SentryErrorLogger.ts 108:12-18
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(108,13)[39m[22m
+[1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+ @ ./packages/core/src/app/common/error/createErrorLogger.ts 3:0-52 6:19-36
+ @ ./packages/core/src/app/common/error/index.ts 5:0-67 5:0-67
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 9:0-52 14:38-55
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\checkout\CheckoutPage.tsx
+./packages/core/src/app/checkout/CheckoutPage.tsx 659:29-41
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\checkout\CheckoutPage.tsx(659,30)[39m[22m
+[1m[31m      TS2339: Property 'prerendering' does not exist on type 'Document'.[39m[22m
+ @ ./packages/core/src/app/checkout/CheckoutInitializer.tsx 4:0-42 13:32-44
+ @ ./packages/core/src/app/checkout/Checkout.tsx 1:0-56 2:15-34
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 11:0-34 37:48-56
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\core\src\app\payment\creditCard\configureCardValidator.ts
+./packages/core/src/app/payment/creditCard/configureCardValidator.ts 1:9-23
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\payment\creditCard\configureCardValidator.ts(1,10)[39m[22m
+[1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+ @ ./packages/core/src/app/payment/creditCard/index.ts 1:0-77 1:0-77
+ @ ./packages/core/src/app/payment/mapToOrderRequestBody.ts 3:0-86 18:14-38 16:14-42
+ @ ./packages/core/src/app/payment/Payment.tsx 30:0-60 268:76-97
+ @ ./packages/core/src/app/checkout/components/PaymentStep.tsx 8:39-10:24
+ @ ./packages/core/src/app/checkout/components/index.ts 4:0-55 4:0-55
+ @ ./packages/core/src/app/checkout/CheckoutPage.tsx 21:0-114 374:32-43 368:40-54 250:44-55 252:44-55 246:44-56 248:44-56
+ @ ./packages/core/src/app/checkout/CheckoutInitializer.tsx 4:0-42 13:32-44
+ @ ./packages/core/src/app/checkout/Checkout.tsx 1:0-56 2:15-34
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 11:0-34 37:48-56
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+ERROR in C:\Project\checkout-js\packages\instrument-utils\src\creditCard\configureCardValidator.ts
+./packages/instrument-utils/src/creditCard/configureCardValidator.ts 1:9-23
+[90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\instrument-utils\src\creditCard\configureCardValidator.ts(1,10)[39m[22m
+[1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+ @ ./packages/instrument-utils/src/creditCard/index.ts 2:0-77 2:0-77
+ @ ./packages/instrument-utils/src/index.ts 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429 2:0-429
+ @ ./packages/core/src/app/checkout/getCheckoutStepStatuses.ts 4:0-92 32:135-169
+ @ ./packages/core/src/app/checkout/mapToCheckoutProps.ts 3:0-64 39:15-38
+ @ ./packages/core/src/app/checkout/CheckoutPage.tsx 26:0-54 377:69-87
+ @ ./packages/core/src/app/checkout/CheckoutInitializer.tsx 4:0-42 13:32-44
+ @ ./packages/core/src/app/checkout/Checkout.tsx 1:0-56 2:15-34
+ @ ./packages/core/src/app/checkout/CheckoutApp.tsx 11:0-34 37:48-56
+ @ ./packages/core/src/app/checkout/renderCheckout.tsx 12:37-61
+ @ ./packages/core/src/app/index.ts 1:0-75 1:0-75
+
+15 errors have detailed information that is not shown.
+Use 'stats.errorDetails: true' resp. '--stats-error-details' to show it.
+
+webpack 5.105.0 compiled with 15 errors in 27202 ms
+
+asset auto-loader-dev.js 389 KiB [compared for emit] (name: auto-loader)
+asset loader-dev.js 382 KiB [compared for emit] (name: loader)
+asset translations-sv-dev.js 101 KiB [compared for emit] (name: translations-sv)
+asset translations-ja-dev.js 57.6 KiB [compared for emit] (name: translations-ja)
+asset translations-fr-dev.js 55.7 KiB [compared for emit] (name: translations-fr)
+asset translations-de-dev.js 55.1 KiB [compared for emit] (name: translations-de)
+asset translations-es-dev.js 53.2 KiB [compared for emit] (name: translations-es)
+asset translations-es-419-dev.js 52.6 KiB [compared for emit] (name: translations-es-419)
+asset translations-es-ar-dev.js 52.6 KiB [compared for emit] (name: translations-es-ar)
+asset translations-es-cl-dev.js 52.6 KiB [compared for emit] (name: translations-es-cl)
+asset translations-es-co-dev.js 52.6 KiB [compared for emit] (name: translations-es-co)
+asset translations-es-mx-dev.js 52.6 KiB [compared for emit] (name: translations-es-mx)
+asset translations-es-pe-dev.js 52.6 KiB [compared for emit] (name: translations-es-pe)
+asset translations-it-dev.js 51.6 KiB [compared for emit] (name: translations-it)
++ 7 assets
+orphan modules 1.86 MiB [orphan] 424 modules
+runtime modules 14.9 KiB 24 modules
+cacheable modules 1.03 MiB
+  javascript modules 119 KiB
+    modules by path ./node_modules/ 106 KiB 26 modules
+    modules by path ./packages/ 12.4 KiB
+      modules by path ./packages/core/src/app/ 9.22 KiB 9 modules
+      modules by path ./packages/locale/src/*.ts 3.18 KiB 2 modules
+  json modules 933 KiB
+    ./packages/locale/src/translations/es.json 51.5 KiB [built] [code generated]
+    ./packages/locale/src/translations/es-419.json 50.8 KiB [built] [code generated]
+    ./packages/locale/src/translations/es-AR.json 50.8 KiB [built] [code generated]
+    ./packages/locale/src/translations/es-CL.json 50.8 KiB [built] [code generated]
+    ./packages/locale/src/translations/es-CO.json 50.8 KiB [built] [code generated]
+    + 14 modules
+webpack 5.105.0 compiled successfully in 32668 ms
+Manifest compilation errors: [
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\checkout\CheckoutPage.tsx(659,30)[39m[22m
+  [1m[31m      TS2339: Property 'prerendering' does not exist on type 'Document'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(55,16)[39m[22m
+  [1m[31m      TS2339: Property 'sentryOnLoad' does not exist on type 'Window & typeof globalThis'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(57,24)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(59,27)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(66,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(74,52)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(78,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(97,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\error\SentryErrorLogger.ts(108,13)[39m[22m
+  [1m[31m      TS2304: Cannot find name 'Sentry'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(13,9)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(15,16)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(18,5)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in 
+[39m[22m[1m[36mC:\Project\checkout-js\packages\core\src\app\common\bundler\configurePublicPath.ts(20,12)[39m[22m
+  [1m[31m      TS2304: Cannot find name '__webpack_public_path__'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\instru
+ment-utils\src\creditCard\configureCardValidator.ts(1,10)[39m[22m
+  [1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d,
+  Error: [90m[tsl] [39m[1m[31mERROR[39m[22m[1m[31m in [39m[22m[1m[36mC:\Project\checkout-js\packages\core\s
+rc\app\payment\creditCard\configureCardValidator.ts(1,10)[39m[22m
+  [1m[31m      TS2305: Module '"card-validator"' has no exported member 'creditCardType'.[39m[22m
+      at makeError (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:163:23)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:134:27
+      at Array.map (<anonymous>)
+      at formatErrors (C:\Project\checkout-js\node_modules\ts-loader\dist\utils.js:117:14)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:188:66
+      at Array.forEach (<anonymous>)
+      at provideErrorsToWebpack (C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:185:31)
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\after-compile.js:70:9
+      at C:\Project\checkout-js\node_modules\ts-loader\dist\instances.js:252:17
+      at fn (C:\Project\checkout-js\node_modules\webpack\lib\Compilation.js:588:10)
+  ts-loader-default_04bb2ec108ef140d
+]
+[webpack-cli] SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>)
+    at mergeManifests (C:\Project\checkout-js\scripts\webpack\merge-manifests.js:10:28)
+    at done (C:\Project\checkout-js\webpack.config.js:412:25)
+    at eval (eval at create (C:\Project\checkout-js\node_modules\tapable\lib\HookCodeFactory.js:71:10), 
+<anonymous>:17:1)
+    at new Promise (<anonymous>)
+    at Hook.eval [as promise] (eval at create 
+(C:\Project\checkout-js\node_modules\tapable\lib\HookCodeFactory.js:71:10), <anonymous>:6:8)
+    at C:\Project\checkout-js\node_modules\webpack-assets-manifest\src\WebpackAssetsManifest.js:129:86
+    at Hook.eval [as callAsync] (eval at create 
+(C:\Project\checkout-js\node_modules\tapable\lib\HookCodeFactory.js:31:10), <anonymous>:30:17)
+    at Watching._done (C:\Project\checkout-js\node_modules\webpack\lib\Watching.js:317:28)
+    at C:\Project\checkout-js\node_modules\webpack\lib\Watching.js:232:21
+
+
+
+ NX   Running target dev for project core and 1 task it depends on failed
+
+Failed tasks:
+
+- core:dev
+
+Hint: run the command with --verbose for more details.
+
+Warning: command "webpack --mode development --watch" exited with non-zero status codeERROR: "nx:dev" exited with 1.

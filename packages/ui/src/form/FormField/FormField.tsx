@@ -1,0 +1,82 @@
+import { type FieldConfig, type FieldProps } from 'formik';
+import { kebabCase } from 'lodash';
+import React, { type FunctionComponent, memo, type ReactNode, useCallback } from 'react';
+
+import { BasicFormField } from '../BasicFormField';
+import { FormFieldError } from '../FormFieldError';
+import { Label } from '../Label';
+
+export interface FormFieldProps {
+    additionalClassName?: string;
+    name: string;
+    label?: ReactNode | ((fieldName: string) => ReactNode);
+    labelContent?: ReactNode;
+    footer?: ReactNode;
+    id?: string;
+    isFloatingLabelEnabled?: boolean;
+    validate?: FieldConfig['validate'];
+    input(field: FieldProps<string>): ReactNode;
+    onChange?(value: string): void;
+}
+
+const FormField: FunctionComponent<FormFieldProps> = ({
+    additionalClassName,
+    labelContent,
+    label,
+    onChange,
+    footer,
+    input,
+    name,
+    id,
+    isFloatingLabelEnabled,
+    validate,
+}) => {
+    let labelClassName = 'body-medium';
+
+    if (isFloatingLabelEnabled) {
+        labelClassName = 'floating-form-field-label';
+    }
+
+    const renderField = useCallback(
+        (props: FieldProps<string>) => (
+            <>
+                {isFloatingLabelEnabled && input(props)}
+
+                {label != null && (typeof label === 'function' ? label(name) : label)}
+                {labelContent != null && label == null && (
+                    <Label
+                        additionalClassName={labelClassName}
+                        htmlFor={name}
+                        id={`${id ?? name}-label`}
+                        isFloatingLabelEnabled={isFloatingLabelEnabled}
+                    >
+                        {labelContent}
+                    </Label>
+                )}
+
+                {!isFloatingLabelEnabled && input(props)}
+
+                <FormFieldError
+                    errorId={`${id ?? name}-field-error-message`}
+                    name={name}
+                    testId={`${kebabCase(name)}-field-error-message`}
+                />
+
+                {footer}
+            </>
+        ),
+        [isFloatingLabelEnabled, input, label, name, labelContent, labelClassName, id, footer],
+    );
+
+    return (
+        <BasicFormField
+            additionalClassName={additionalClassName}
+            name={name}
+            onChange={onChange}
+            render={renderField}
+            validate={validate}
+        />
+    );
+};
+
+export default memo(FormField);

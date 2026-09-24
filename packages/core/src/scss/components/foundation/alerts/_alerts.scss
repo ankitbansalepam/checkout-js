@@ -1,0 +1,33 @@
+// =============================================================================
+// ALERTS
+// =============================================================================
+
+// BCApp Alerts specifics
+// -----------------------------------------------------------------------------
+//
+// 1. If set to false, there is no outputted CSS for this component.
+//
+// -----------------------------------------------------------------------------
+
+@if $exportCSS--alerts { // 1
+
+    .alertBox-heading {
+        @include headingStyle("h3");
+    }
+
+    .alertBox--error {
+        color: color("error");
+
+        &.no-padding {
+            padding: 0;
+        }
+    }
+
+    .alertBox--success {
+        color: color("success");
+    }
+
+    .alertBox--warning {
+        color: color("warning");
+    }
+}

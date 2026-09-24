@@ -1,0 +1,21 @@
+{
+  "name": "hosted-widget-integration",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/hosted-widget-integration/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"]
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/packages/hosted-widget-integration"],
+      "options": {
+        "jestConfig": "packages/hosted-widget-integration/jest.config.js",
+        "runInBand": true
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}
