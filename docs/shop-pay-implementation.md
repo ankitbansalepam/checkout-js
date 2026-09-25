@@ -30,7 +30,7 @@ Shopper clicks Shop Pay (checkout-js)
 4. **Allow the checkout domain.** Add `https://shoppaystore.mybigcommerce.com` to the Shop Pay domain allow list.
 5. **Create a Storefront API access token** with the Shop Pay payment request scopes. The backend uses it as `STOREFRONT_API_TOKEN`.
 6. **Create an Admin API access token** (`shpat_…`). The backend uses it as `ADMIN_API_TOKEN` for reconciliation, and it's also handy for checking orders when troubleshooting.
-7. **Optional: create an `orders/create` webhook** pointing at `https://shop-pay-backend.vercel.app/webhooks/shopify/orders`, and keep its signing secret for `SHOPIFY_WEBHOOK_SECRET`. Without the secret, the webhook route rejects every request, which is intentional.
+7. **Create the `orders/create` webhook in Shopify Admin** (Settings → Notifications → Webhooks → Create webhook: Order creation, JSON, URL `https://shop-pay-backend.vercel.app/webhooks/shopify/orders`). Copy the key shown under "Your webhooks will be signed with …" into Vercel as `SHOPIFY_WEBHOOK_SECRET`, redeploy, and click **Send test notification**. Don't create it through the Admin API: the Shop channel app doesn't show the secret that signs app-created webhooks, so every delivery would be rejected.
 
 ## Part 2: Set up BigCommerce
 
@@ -74,7 +74,8 @@ The backend is a single Express app, `shop-pay-backend/server.js`.
    | `POST /shop-pay/submit` | The shopper presses Pay now | Merges the final shipping lines and totals, rejects the payment unless the total equals BigCommerce's checkout total, calls `shopPayPaymentRequestSessionSubmit` with an idempotency key. This only starts payment processing; no order is created yet |
    | `POST /shop-pay/complete` | Shop Pay reports the payment complete | Finds the Shopify order for the session (Admin API), checks it is paid and its total matches, then creates the BigCommerce order (linked to the signed-in customer, if any). Answers 202 while Shopify is still creating the order |
    | `GET /bigcommerce/orders/:id` | The confirmation page loads | Checks the confirmation token (valid for 15 minutes), returns the order, deletes the BigCommerce cart |
-   | `POST /webhooks/shopify/orders` | Shopify creates an order | Verifies the HMAC and marks the BigCommerce order paid |
+   | `POST /webhooks/shopify/orders` | Shopify creates an order | Verifies the HMAC. If checkout never completed the payment (e.g. the tab was closed), creates the BigCommerce order; otherwise makes sure it is marked paid |
+   | `GET /health/webhooks` | Daily Vercel cron (09:00 UTC), or by hand with `Authorization: Bearer <CRON_SECRET>` | Reports verified webhook deliveries, rejections and failures, and paid Shopify orders still without a BigCommerce order after 10 minutes; 503 when something is wrong |
    | `POST /delivery/options` | The shipping step and Shop Pay load | Says whether the cart needs scheduled (truck) delivery and which dates are available for the address (mock ATP); see diagram 7 in [shop-pay-flow-diagrams.md](shop-pay-flow-diagrams.md) |
    | `GET /health` | Anytime | Liveness check |
 
