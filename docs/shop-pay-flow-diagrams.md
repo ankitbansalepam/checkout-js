@@ -17,7 +17,8 @@ flowchart LR
 
     subgraph Vercel["shop-pay-backend on Vercel"]
         Backend["Express API<br/>holds all secrets"]
-        Redis[("Upstash Redis<br/>sessions + locks")]
+        Redis[("Upstash Redis<br/>sessions, locks,<br/>webhook health")]
+        Cron(["Daily cron 09:00 UTC<br/>/health/webhooks"])
     end
 
     subgraph Shopify
@@ -41,6 +42,8 @@ flowchart LR
     Backend --> BCCheckout
     Backend --> BCOrders
     Popup --> Payments
+    Payments -.->|orders/create webhook<br/>HMAC-signed| Backend
+    Cron -.-> Backend
 ```
 
 ### Explanation
@@ -52,7 +55,9 @@ flowchart LR
   - our backend, to create, submit and complete the payment.
 - **The backend holds every secret:** the Shopify Storefront and Admin tokens, and the BigCommerce API token. Nothing secret reaches the browser.
 - **Shopify and BigCommerce have different jobs:** Shopify processes the payment through Shopify Payments. BigCommerce remains the order of record for fulfilment, so each successful checkout creates two linked orders, one in each system.
-- **Upstash Redis** stores the session for each attempt, so every backend instance on Vercel sees the same data. It also holds short locks that prevent duplicate orders.
+- **Upstash Redis** stores the session for each attempt, so every backend instance on Vercel sees the same data. It also holds short locks that prevent duplicate orders, and the webhook delivery stats.
+- **Shopify also calls the backend (dotted line):** when it creates an order, it sends an `orders/create` webhook signed with a secret key. The backend uses it as a safety net, creating the BigCommerce order if checkout never did (see diagram 8).
+- **A daily cron job** (09:00 UTC) checks that webhooks are arriving and that no paid order is missing in BigCommerce (see diagram 8).
 
 ## 2. End-to-end payment
 
@@ -232,6 +237,7 @@ This step exists because Shopify's submit only starts the payment. If the BigCom
   - The order also gets the shipping cost, any discounts, and the "paid" status (Awaiting Fulfillment).
   - If a BigCommerce order already existed for the checkout, it's marked paid instead.
 - **Finishing:** the backend saves the completion time and releases the lock, then returns the order number and the confirmation token.
+- **The same step runs from the webhook:** when Shopify's `orders/create` webhook arrives, the backend runs this same completion step under the same lock. Whichever arrives first, checkout's call or the webhook, creates the order, and the other finds it done (see diagram 8).
 
 ## 6. Order confirmation
 
@@ -332,3 +338,62 @@ sequenceDiagram
 - **Storing the schedule (last steps):** payment runs exactly as in diagrams 2 and 5. At Pay now, the backend also rejects a scheduled cart without a scheduled service or an available date. BigCommerce orders have no delivery-date field, so the backend writes the service, date and instructions to the order's staff notes (for example "Scheduled delivery: Green Glove Delivery on Mon, Sep 28 (2026-09-28)") and the date to the customer message.
 - **In the shipping step:** scheduled carts see only the scheduled services; other carts don't see them. If BigCommerce has another method selected (e.g. Flat rate), checkout switches to a scheduled service. Continue stays disabled until an eligible address and a date are chosen. The choice is kept in the browser session, per cart.
 - **Alternative, if express checkout is a must:** list each service-and-date combination as its own delivery method in the popup, for example "White Glove – Tue 29 Sep". This keeps the top button, but the list grows quickly (2 services × 5 dates = 10 options), there's still nowhere for instructions, and Shopify doesn't document a maximum number of delivery methods.
+
+## 8. Webhook safety net and health check
+
+What happens when Shopify's `orders/create` webhook arrives, and how the daily health check spots problems. This covers the case where the shopper pays but checkout never finishes, for example because they closed the tab.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant SF as Shopify
+    participant BE as Backend
+    participant R as Redis
+    participant BC as BigCommerce
+    participant CR as Daily cron (09:00 UTC)
+
+    SF->>BE: POST /webhooks/shopify/orders (order, HMAC signature)
+    alt Signature does not match SHOPIFY_WEBHOOK_SECRET
+        BE->>R: Record "rejected"
+        BE-->>SF: 401 (Shopify retries for up to 48 hours)
+    else Signature valid
+        BE->>R: Record "received", find session by sourceIdentifier
+        alt No matching session (e.g. an order created outside checkout)
+            BE-->>SF: 200, ignored
+        else Checkout already completed it
+            BE->>BC: Make sure the order is marked paid
+            BE-->>SF: 200
+        else Paid but checkout never completed it
+            BE->>R: Take the completion lock
+            BE->>BC: Create the BigCommerce order (same step as /shop-pay/complete)
+            BE->>R: Save completion, clear from pending, release lock
+            BE-->>SF: 200
+        end
+    end
+
+    CR->>BE: GET /health/webhooks (Bearer CRON_SECRET)
+    BE->>R: Webhook stats and pending payments
+    BE->>SF: Admin API: paid orders for pending payments older than 10 minutes
+    alt Anything wrong
+        BE-->>CR: 503 + problems, logged as an error in Vercel
+    else Healthy
+        BE-->>CR: 200
+    end
+```
+
+### Explanation
+
+- **Where the webhook comes from:** it's created in Shopify Admin (Settings → Notifications → Webhooks) for the live backend URL. Shopify signs every delivery with the key shown on that page, stored in Vercel as `SHOPIFY_WEBHOOK_SECRET`. A webhook created through the Admin API wouldn't work: the Shop channel app never shows the secret it signs with.
+- **The signature check (steps 1–3):** the backend recomputes the signature from the raw request body. A mismatch is rejected with 401 and recorded, so a fake "order paid" message can never create an order. Shopify retries rejected deliveries for up to 48 hours.
+- **Three cases for a valid delivery (steps 4–11):**
+  - **No matching session:** the Shopify order didn't come from our checkout, for example Shopify's own test notification, so it's ignored.
+  - **Already completed:** checkout's `/shop-pay/complete` created the order first, which is the normal case. The webhook only makes sure the order is marked paid.
+  - **Paid but never completed:** the shopper paid but checkout never called `/shop-pay/complete`. The webhook creates the BigCommerce order itself, using the same completion step and lock as diagram 5, so a payment never gets two orders.
+- **If processing fails:** the backend answers 500 and records the failure, and Shopify retries the delivery later.
+- **The health check (steps 12–16):** a Vercel cron job calls `/health/webhooks` once a day. The team's Vercel Hobby plan doesn't allow more often. It reports a problem when:
+  - no webhook delivery has ever been verified;
+  - the secret is missing, or the latest delivery was rejected;
+  - a webhook failed in the last 24 hours;
+  - Shopify has a paid order for a payment submitted more than 10 minutes ago, but BigCommerce has no order for it.
+- **Stale entries are cleaned up:** payments that were never paid (declined or abandoned) are dropped from the pending list after 24 hours.
+- **Where problems show up:** only in Vercel's logs, as `[health] webhook problems`. Slack or email alerts would need a channel to send them to.
