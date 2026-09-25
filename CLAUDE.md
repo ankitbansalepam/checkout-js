@@ -81,3 +81,7 @@ const { checkoutState } = useCheckout();
 - Checkout loader: `https://checkout-js-weld.vercel.app/auto-loader.js`. A push to `master` auto-deploys it to Vercel production (team `shop-pay`, project `checkout-js`); `vercel ls checkout-js` shows status.
 - Backend: `https://shop-pay-backend.vercel.app`, the default in `shopPayConfig.ts` (`window.shopPayBackendUrl` overrides it). Deployed with `vercel --prod` from the backend folder, not from git.
 - To confirm a deploy contains a change, fetch `auto-loader.js`, then grep the `checkout-*.js` chunk it lists for a distinctive identifier.
+
+## Shop Pay open work
+
+Only the items under "Remaining work" in `.claude/skills/shop-pay-integration/SKILL.md` are still open (real ATP API, Apigee, gateway contract, go-live switches, and a few known gaps). Everything else in the estimation sheet is done or out of scope.
