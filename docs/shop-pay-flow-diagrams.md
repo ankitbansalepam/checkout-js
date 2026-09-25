@@ -1,6 +1,6 @@
 # Shop Pay flow diagrams
 
-Diagrams of the Shop Pay integration between the BigCommerce custom checkout (`checkout-js`), the Shop Pay backend (`shop-pay-backend`), Shopify and BigCommerce. For setup steps, see [shop-pay-implementation.md](shop-pay-implementation.md).
+Diagrams of the Shop Pay integration between the BigCommerce custom checkout (`checkout-js`), the Shop Pay backend (`shop-pay-backend`), Shopify and BigCommerce. For setup steps, see [shop-pay-implementation.md](shop-pay-implementation.md); for the component and deployment architecture, see [shop-pay-architecture.md](shop-pay-architecture.md).
 
 ## 1. System overview
 

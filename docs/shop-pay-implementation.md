@@ -1,6 +1,6 @@
 # Shop Pay implementation: step by step
 
-This guide walks through how Shop Pay was added to the BigCommerce custom checkout, in the order you would build or rebuild it. For the backend route details and the history of issues found along the way, see `shop-pay-backend/INTEGRATION_GUIDE.md`. For diagrams of each flow, see [shop-pay-flow-diagrams.md](shop-pay-flow-diagrams.md).
+This guide walks through how Shop Pay was added to the BigCommerce custom checkout, in the order you would build or rebuild it. For the backend route details and the history of issues found along the way, see `shop-pay-backend/INTEGRATION_GUIDE.md`. For diagrams of each flow, see [shop-pay-flow-diagrams.md](shop-pay-flow-diagrams.md), and for the architecture, [shop-pay-architecture.md](shop-pay-architecture.md).
 
 ## How it fits together
 
