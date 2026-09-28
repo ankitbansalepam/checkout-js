@@ -108,7 +108,7 @@
     "@nx/eslint": "19.8.9",
     "@nx/eslint-plugin": "19.8.9",
     "@nx/jest": "19.8.9",
-    "@nx/js": "19.8.9",
+    "@nx/js": "23.2.1",
     "@nx/plugin": "19.8.9",
     "@nx/workspace": "19.8.9",
     "@playwright/test": "1.56.1",
